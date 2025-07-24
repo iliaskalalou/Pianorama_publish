@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <nav>
+                <a href="/" class="logo">TikTok Legal</a>
+                <ul>
+                    <li><a href="/">Home</a></li>
+                    <li><a href="/terms/">Terms of Service</a></li>
+                    <li><a href="/privacy/">Privacy Policy</a></li>
+                </ul>
+            </nav>
+        </header>
+        
+        <main>
+            {{ content | safe }}
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 TikTok. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>
