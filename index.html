@@ -1,179 +1,148 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
+    <title>TikTok OAuth Callback</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TikTok Legal Documents</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background-color: #f8f9fa;
-        }
-        
-        .container {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        header {
-            background-color: #fff;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        nav {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: bold;
-            text-decoration: none;
-            color: #000;
-        }
-        
-        nav ul {
-            list-style: none;
-            display: flex;
-            gap: 2rem;
-        }
-        
-        nav a {
-            text-decoration: none;
-            color: #333;
-            transition: color 0.3s ease;
-        }
-        
-        nav a:hover {
-            color: #fe2c55;
-        }
-        
-        main {
-            flex: 1;
+            font-family: Arial, sans-serif;
             max-width: 800px;
-            margin: 0 auto;
-            padding: 3rem 2rem;
-            width: 100%;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
         }
-        
-        .home-hero {
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
             text-align: center;
-            padding: 4rem 0;
         }
-        
-        .home-hero h1 {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #000;
+        .code-box {
+            background: #e8f4f8;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 2px dashed #4A90E2;
         }
-        
-        .home-hero p {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 2rem;
+        .url {
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 14px;
+            color: #333;
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 3px;
+            margin: 10px 0;
         }
-        
-        .home-links {
-            display: flex;
-            gap: 2rem;
-            justify-content: center;
-            flex-wrap: wrap;
+        .instructions {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
         }
-        
-        .home-links a {
-            display: inline-block;
-            padding: 1rem 2rem;
-            background-color: #fe2c55;
+        button {
+            background: #4A90E2;
             color: white;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: background-color 0.3s ease;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
         }
-        
-        .home-links a:hover {
-            background-color: #e02749;
+        button:hover {
+            background: #357abd;
         }
-        
-        footer {
-            background-color: #fff;
-            border-top: 1px solid #e0e0e0;
-            padding: 2rem;
-            text-align: center;
-            color: #666;
+        .success {
+            color: #28a745;
+            font-weight: bold;
         }
-        
-        @media (max-width: 768px) {
-            nav {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            nav ul {
-                flex-direction: column;
-                text-align: center;
-                gap: 1rem;
-            }
-            
-            .home-hero h1 {
-                font-size: 2rem;
-            }
-            
-            .home-links {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            main {
-                padding: 2rem 1rem;
-            }
+        .verification {
+            display: none;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <nav>
-                <a href="/" class="logo">TikTok Legal</a>
-                <ul>
-                    <li><a href="/">Home</a></li>
-                    <li><a href="/TikTok/terms/">Terms of Service</a></li>
-                    <li><a href="/TikTok/privacy/">Privacy Policy</a></li>
-                </ul>
-            </nav>
-        </header>
+        <h1>🎬 TikTok Authorization Callback</h1>
         
-        <main>
-            <div class="home-hero">
-                <h1>TikTok Legal Documents</h1>
-                <p>Welcome to our legal documentation center. Here you can find our Terms of Service and Privacy Policy.</p>
-                
-                <div class="home-links">
-                    <a href="/TikTok/terms/">Terms of Service</a>
-                    <a href="/TikTok/privacy/">Privacy Policy</a>
-                </div>
-            </div>
-        </main>
-        
-        <footer>
-            <p>&copy; 2024 TikTok. All rights reserved.</p>
-        </footer>
+        <div id="content">
+            <p>Chargement...</p>
+        </div>
     </div>
+
+    <!-- Fichier de vérification TikTok caché -->
+    <div class="verification">tiktokNsRSHSqQZ7dd8WeAYJOIJHCMQraLJQ2k</div>
+
+    <script>
+        // Obtenir l'URL actuelle
+        const currentUrl = window.location.href;
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        
+        const contentDiv = document.getElementById('content');
+        
+        if (error) {
+            contentDiv.innerHTML = `
+                <div class="instructions" style="border-color: #dc3545; background: #f8d7da;">
+                    <h2>❌ Erreur d'autorisation</h2>
+                    <p>Erreur: <strong>${error}</strong></p>
+                    <p>${urlParams.get('error_description') || 'Aucune description'}</p>
+                </div>
+            `;
+        } else if (code) {
+            contentDiv.innerHTML = `
+                <div class="code-box">
+                    <h2 class="success">✅ Autorisation réussie!</h2>
+                    <p>Code d'autorisation obtenu: <strong>${code.substring(0, 20)}...</strong></p>
+                </div>
+                
+                <div class="instructions">
+                    <h3>📋 Instructions:</h3>
+                    <ol>
+                        <li>Copie l'URL complète ci-dessous</li>
+                        <li>Retourne dans ton terminal</li>
+                        <li>Colle l'URL quand demandé</li>
+                    </ol>
+                </div>
+                
+                <p><strong>URL à copier:</strong></p>
+                <div class="url" id="urlBox">${currentUrl}</div>
+                
+                <button onclick="copyUrl()">📋 Copier l'URL</button>
+                <span id="copyStatus"></span>
+            `;
+        } else {
+            contentDiv.innerHTML = `
+                <div class="instructions">
+                    <h2>🤔 Aucun code d'autorisation</h2>
+                    <p>Cette page est utilisée pour capturer le code d'autorisation TikTok.</p>
+                    <p>Si tu arrives ici sans code, retourne au script Python et recommence.</p>
+                </div>
+            `;
+        }
+        
+        function copyUrl() {
+            const urlText = document.getElementById('urlBox').innerText;
+            navigator.clipboard.writeText(urlText).then(() => {
+                document.getElementById('copyStatus').innerHTML = ' <span class="success">✓ Copié!</span>';
+            }).catch(() => {
+                // Fallback pour les anciens navigateurs
+                const textArea = document.createElement('textarea');
+                textArea.value = urlText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textArea);
+                document.getElementById('copyStatus').innerHTML = ' <span class="success">✓ Copié!</span>';
+            });
+        }
+    </script>
 </body>
 </html>
