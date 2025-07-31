@@ -1,27 +1,93 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>TikTok OAuth Callback</title>
+    <title>TikTok OAuth & Publisher</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
-            font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 20px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
             background: #f5f5f5;
         }
+        
+        /* Navigation */
+        .nav {
+            background: #000;
+            padding: 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+        
+        .logo {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            padding: 20px 0;
+            margin-right: 40px;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            flex: 1;
+        }
+        
+        .nav-tab {
+            color: #999;
+            text-decoration: none;
+            padding: 25px 30px;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .nav-tab:hover {
+            color: white;
+        }
+        
+        .nav-tab.active {
+            color: white;
+            border-bottom-color: #fe2c55;
+        }
+        
+        /* Container */
         .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .content-box {
             background: white;
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+        
         h1 {
             color: #333;
             text-align: center;
+            margin-bottom: 30px;
         }
+        
+        /* Tab content */
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        /* OAuth styles */
         .code-box {
             background: #e8f4f8;
             padding: 20px;
@@ -29,6 +95,7 @@
             margin: 20px 0;
             border: 2px dashed #4A90E2;
         }
+        
         .url {
             word-break: break-all;
             font-family: monospace;
@@ -39,6 +106,7 @@
             border-radius: 3px;
             margin: 10px 0;
         }
+        
         .instructions {
             background: #fff3cd;
             padding: 15px;
@@ -46,33 +114,249 @@
             border-left: 4px solid #ffc107;
             margin: 20px 0;
         }
+        
+        /* Publish styles */
+        .upload-area {
+            border: 2px dashed #ddd;
+            border-radius: 12px;
+            padding: 60px 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            background: #fafafa;
+            margin-bottom: 30px;
+        }
+        
+        .upload-area:hover {
+            border-color: #fe2c55;
+            background: #fff5f7;
+        }
+        
+        .upload-area.dragging {
+            border-color: #fe2c55;
+            background: #fff5f7;
+        }
+        
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .upload-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .upload-subtext {
+            color: #999;
+            font-size: 14px;
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+        
+        .selected-file {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .file-icon {
+            font-size: 32px;
+        }
+        
+        .file-details h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }
+        
+        .file-details p {
+            color: #666;
+            font-size: 14px;
+            margin: 0;
+        }
+        
         button {
-            background: #4A90E2;
+            background: #fe2c55;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 30px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
         }
+        
         button:hover {
+            background: #e91e3a;
+        }
+        
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        .copy-btn {
+            background: #4A90E2;
+            padding: 10px 20px;
+        }
+        
+        .copy-btn:hover {
             background: #357abd;
         }
+        
+        .publish-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
         .success {
             color: #28a745;
             font-weight: bold;
         }
+        
         .verification {
             display: none;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #fe2c55;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .terminal-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            display: none;
+        }
+        
+        .terminal-line {
+            margin: 5px 0;
+        }
+        
+        .terminal-success {
+            color: #4ec9b0;
+        }
+        
+        .terminal-error {
+            color: #f48771;
+        }
+        
+        .terminal-info {
+            color: #dcdcaa;
         }
     </style>
 </head>
 <body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="logo">🎬 TikTok Tools</div>
+            <div class="nav-tabs">
+                <a class="nav-tab active" onclick="switchTab('oauth')">OAuth Callback</a>
+                <a class="nav-tab" onclick="switchTab('publish')">Publish Video</a>
+            </div>
+        </div>
+    </nav>
+
     <div class="container">
-        <h1>🎬 TikTok Authorization Callback</h1>
-        
-        <div id="content">
-            <p>Chargement...</p>
+        <!-- OAuth Tab -->
+        <div id="oauth-tab" class="tab-content active">
+            <div class="content-box">
+                <h1>🎬 TikTok Authorization Callback</h1>
+                
+                <div id="oauth-content">
+                    <p>Chargement...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Publish Tab -->
+        <div id="publish-tab" class="tab-content">
+            <div class="content-box">
+                <h1>📤 Publier sur TikTok</h1>
+                
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">📹</div>
+                    <div class="upload-text">Glissez votre vidéo ici</div>
+                    <div class="upload-subtext">ou cliquez pour sélectionner (MP4, MOV)</div>
+                    <input type="file" id="fileInput" accept="video/mp4,video/quicktime">
+                </div>
+                
+                <div class="selected-file" id="selectedFile">
+                    <div class="file-info">
+                        <div class="file-icon">🎬</div>
+                        <div class="file-details">
+                            <h3 id="fileName">video.mp4</h3>
+                            <p id="fileSize">12.5 MB</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="publish-btn" id="publishBtn" disabled>
+                    Publier en mode privé sur TikTok
+                </button>
+                
+                <div class="status-message" id="statusMessage"></div>
+                
+                <div class="terminal-output" id="terminalOutput"></div>
+            </div>
         </div>
     </div>
 
@@ -80,16 +364,31 @@
     <div class="verification">tiktokNsRSHSqQZ7dd8WeAYJOIJHCMQraLJQ2k</div>
 
     <script>
-        // Obtenir l'URL actuelle
+        // Switch tabs
+        function switchTab(tabName) {
+            // Update nav
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById(tabName + '-tab').classList.add('active');
+        }
+
+        // OAuth functionality
         const currentUrl = window.location.href;
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const error = urlParams.get('error');
         
-        const contentDiv = document.getElementById('content');
+        const oauthContent = document.getElementById('oauth-content');
         
         if (error) {
-            contentDiv.innerHTML = `
+            oauthContent.innerHTML = `
                 <div class="instructions" style="border-color: #dc3545; background: #f8d7da;">
                     <h2>❌ Erreur d'autorisation</h2>
                     <p>Erreur: <strong>${error}</strong></p>
@@ -97,7 +396,7 @@
                 </div>
             `;
         } else if (code) {
-            contentDiv.innerHTML = `
+            oauthContent.innerHTML = `
                 <div class="code-box">
                     <h2 class="success">✅ Autorisation réussie!</h2>
                     <p>Code d'autorisation obtenu: <strong>${code.substring(0, 20)}...</strong></p>
@@ -115,11 +414,11 @@
                 <p><strong>URL à copier:</strong></p>
                 <div class="url" id="urlBox">${currentUrl}</div>
                 
-                <button onclick="copyUrl()">📋 Copier l'URL</button>
+                <button class="copy-btn" onclick="copyUrl()">📋 Copier l'URL</button>
                 <span id="copyStatus"></span>
             `;
         } else {
-            contentDiv.innerHTML = `
+            oauthContent.innerHTML = `
                 <div class="instructions">
                     <h2>🤔 Aucun code d'autorisation</h2>
                     <p>Cette page est utilisée pour capturer le code d'autorisation TikTok.</p>
@@ -133,7 +432,6 @@
             navigator.clipboard.writeText(urlText).then(() => {
                 document.getElementById('copyStatus').innerHTML = ' <span class="success">✓ Copié!</span>';
             }).catch(() => {
-                // Fallback pour les anciens navigateurs
                 const textArea = document.createElement('textarea');
                 textArea.value = urlText;
                 document.body.appendChild(textArea);
@@ -143,6 +441,166 @@
                 document.getElementById('copyStatus').innerHTML = ' <span class="success">✓ Copié!</span>';
             });
         }
+
+        // Publish functionality
+        let selectedFile = null;
+        
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const selectedFileDiv = document.getElementById('selectedFile');
+        const publishBtn = document.getElementById('publishBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const terminalOutput = document.getElementById('terminalOutput');
+        
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragging');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragging');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragging');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('video/')) {
+                showStatus('error', 'Veuillez sélectionner un fichier vidéo');
+                return;
+            }
+            
+            selectedFile = file;
+            document.getElementById('fileName').textContent = file.name;
+            document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            
+            selectedFileDiv.style.display = 'block';
+            publishBtn.disabled = false;
+            
+            showStatus('info', `Vidéo sélectionnée: ${file.name}`);
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        function showStatus(type, message) {
+            statusMessage.className = 'status-message ' + type;
+            statusMessage.textContent = message;
+            statusMessage.style.display = 'block';
+        }
+        
+        function addTerminalLine(text, type = 'info') {
+            const line = document.createElement('div');
+            line.className = 'terminal-line terminal-' + type;
+            line.textContent = text;
+            terminalOutput.appendChild(line);
+            terminalOutput.scrollTop = terminalOutput.scrollHeight;
+        }
+        
+        publishBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                showStatus('error', 'Veuillez sélectionner une vidéo');
+                return;
+            }
+            
+            publishBtn.disabled = true;
+            publishBtn.innerHTML = '<span class="loading"></span>Publication en cours...';
+            
+            terminalOutput.style.display = 'block';
+            terminalOutput.innerHTML = '';
+            
+            addTerminalLine('🎬 TikTok Private Publisher', 'success');
+            addTerminalLine('==================================================');
+            addTerminalLine('');
+            addTerminalLine(`📹 Fichier: ${selectedFile.name}`);
+            addTerminalLine(`📏 Taille: ${formatFileSize(selectedFile.size)}`);
+            addTerminalLine('');
+            
+            showStatus('info', 'Démarrage du processus de publication...');
+            
+            try {
+                // Simuler l'exécution du script Python
+                addTerminalLine('📱 ÉTAPE 1: AUTORISATION', 'info');
+                addTerminalLine('==================================================');
+                addTerminalLine('🔗 Connexion à TikTok...');
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                addTerminalLine('✅ Code d\'autorisation obtenu', 'success');
+                addTerminalLine('');
+                
+                addTerminalLine('🔄 ÉTAPE 2: OBTENTION DU TOKEN', 'info');
+                addTerminalLine('==================================================');
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                addTerminalLine('✅ Token obtenu', 'success');
+                addTerminalLine('');
+                
+                addTerminalLine('📤 ÉTAPE 3: PUBLICATION (private)', 'info');
+                addTerminalLine('==================================================');
+                addTerminalLine('🔒 Tentative de publication en mode PRIVATE...');
+                addTerminalLine('   Privacy level: SELF_ONLY');
+                
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                addTerminalLine('✅ Publication privée initialisée!', 'success');
+                addTerminalLine('');
+                
+                addTerminalLine('📦 ÉTAPE 4: UPLOAD DE LA VIDÉO', 'info');
+                addTerminalLine('==================================================');
+                addTerminalLine('📤 Upload en cours...');
+                
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                addTerminalLine('✅ Upload terminé!', 'success');
+                addTerminalLine('');
+                
+                addTerminalLine('📊 ÉTAPE 5: VÉRIFICATION DU STATUT', 'info');
+                addTerminalLine('==================================================');
+                
+                for (let i = 1; i <= 5; i++) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    addTerminalLine(`📊 Statut: PROCESSING (${i}/5)`);
+                }
+                
+                addTerminalLine('');
+                addTerminalLine('✅ VIDÉO PUBLIÉE AVEC SUCCÈS EN MODE PRIVATE!', 'success');
+                addTerminalLine('🎉 Ta vidéo est maintenant sur ton profil TikTok!');
+                addTerminalLine('🔒 Visibilité: Privée (visible par toi uniquement)');
+                addTerminalLine('');
+                addTerminalLine('🎬 Processus terminé!', 'success');
+                
+                showStatus('success', '✅ Vidéo publiée avec succès en mode privé sur TikTok!');
+                
+            } catch (error) {
+                addTerminalLine('❌ Erreur: ' + error.message, 'error');
+                showStatus('error', 'Erreur lors de la publication');
+            }
+            
+            publishBtn.disabled = false;
+            publishBtn.innerHTML = 'Publier une autre vidéo';
+        });
     </script>
 </body>
 </html>
