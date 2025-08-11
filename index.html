@@ -87,6 +87,82 @@
             display: block;
         }
         
+        /* Account section */
+        .account-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .account-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .account-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #666;
+        }
+        
+        .account-details h3 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #333;
+        }
+        
+        .account-details p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .account-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-secondary {
+            background: #e9ecef;
+            color: #495057;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .btn-secondary:hover {
+            background: #dee2e6;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
         /* OAuth styles */
         .code-box {
             background: #e8f4f8;
@@ -301,6 +377,26 @@
         .terminal-info {
             color: #dcdcaa;
         }
+        
+        .not-connected {
+            text-align: center;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .not-connected h2 {
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .connect-btn {
+            background: #fe2c55;
+            color: white;
+            padding: 12px 30px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
@@ -332,26 +428,53 @@
             <div class="content-box">
                 <h1>📤 Publier sur TikTok</h1>
                 
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-icon">📹</div>
-                    <div class="upload-text">Glissez votre vidéo ici</div>
-                    <div class="upload-subtext">ou cliquez pour sélectionner (MP4, MOV)</div>
-                    <input type="file" id="fileInput" accept="video/mp4,video/quicktime">
-                </div>
-                
-                <div class="selected-file" id="selectedFile">
-                    <div class="file-info">
-                        <div class="file-icon">🎬</div>
-                        <div class="file-details">
-                            <h3 id="fileName">video.mp4</h3>
-                            <p id="fileSize">12.5 MB</p>
+                <!-- Account Section -->
+                <div id="accountSection" style="display: none;">
+                    <div class="account-section">
+                        <div class="account-info">
+                            <div class="account-avatar" id="accountAvatar">👤</div>
+                            <div class="account-details">
+                                <h3 id="accountName">@username</h3>
+                                <p>Connecté à TikTok</p>
+                            </div>
+                        </div>
+                        <div class="account-actions">
+                            <button class="btn-secondary" onclick="changeAccount()">Changer de compte</button>
+                            <button class="btn-danger" onclick="disconnect()">Déconnexion</button>
                         </div>
                     </div>
                 </div>
                 
-                <button class="publish-btn" id="publishBtn" disabled>
-                    Publier en mode privé sur TikTok
-                </button>
+                <!-- Not Connected Section -->
+                <div id="notConnectedSection" class="not-connected">
+                    <h2>🔐 Aucun compte TikTok connecté</h2>
+                    <p>Connectez-vous à TikTok pour publier des vidéos</p>
+                    <button class="connect-btn" onclick="connectToTikTok()">Se connecter à TikTok</button>
+                </div>
+                
+                <!-- Upload Section -->
+                <div id="uploadSection" style="display: none;">
+                    <div class="upload-area" id="uploadArea">
+                        <div class="upload-icon">📹</div>
+                        <div class="upload-text">Glissez votre vidéo ici</div>
+                        <div class="upload-subtext">ou cliquez pour sélectionner (MP4, MOV)</div>
+                        <input type="file" id="fileInput" accept="video/mp4,video/quicktime">
+                    </div>
+                    
+                    <div class="selected-file" id="selectedFile">
+                        <div class="file-info">
+                            <div class="file-icon">🎬</div>
+                            <div class="file-details">
+                                <h3 id="fileName">video.mp4</h3>
+                                <p id="fileSize">12.5 MB</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button class="publish-btn" id="publishBtn" disabled>
+                        Publier en mode privé sur TikTok
+                    </button>
+                </div>
                 
                 <div class="status-message" id="statusMessage"></div>
                 
@@ -364,6 +487,88 @@
     <div class="verification">tiktokNsRSHSqQZ7dd8WeAYJOIJHCMQraLJQ2k</div>
 
     <script>
+        // Gestion des comptes
+        let currentAccount = null;
+        
+        // Vérifier si un compte est sauvegardé
+        function checkSavedAccount() {
+            const savedAccount = localStorage.getItem('tiktok_account');
+            if (savedAccount) {
+                currentAccount = JSON.parse(savedAccount);
+                showConnectedUI();
+            } else {
+                showNotConnectedUI();
+            }
+        }
+        
+        // Afficher l'interface connectée
+        function showConnectedUI() {
+            document.getElementById('accountSection').style.display = 'block';
+            document.getElementById('notConnectedSection').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'block';
+            
+            if (currentAccount) {
+                document.getElementById('accountName').textContent = '@' + currentAccount.username;
+                if (currentAccount.avatar) {
+                    document.getElementById('accountAvatar').textContent = '🎭';
+                }
+            }
+        }
+        
+        // Afficher l'interface non connectée
+        function showNotConnectedUI() {
+            document.getElementById('accountSection').style.display = 'none';
+            document.getElementById('notConnectedSection').style.display = 'block';
+            document.getElementById('uploadSection').style.display = 'none';
+        }
+        
+        // Se connecter à TikTok
+        function connectToTikTok() {
+            showStatus('info', '🔗 Ouverture de la connexion TikTok...');
+            
+            // Simuler la connexion OAuth
+            const authUrl = "https://www.tiktok.com/v2/auth/authorize/?client_key=sbaw9sck9i4u94jbyw&response_type=code&scope=user.info.basic%2Cvideo.publish&redirect_uri=https%3A%2F%2Filiaskalalou.github.io%2FTikTok&state=state123";
+            
+            // Ouvrir dans une nouvelle fenêtre
+            const authWindow = window.open(authUrl, 'TikTok Auth', 'width=600,height=700');
+            
+            // Écouter le callback
+            window.addEventListener('message', function(event) {
+                if (event.data && event.data.type === 'tiktok-auth-success') {
+                    // Simuler la récupération des infos utilisateur
+                    setTimeout(() => {
+                        currentAccount = {
+                            username: 'user_' + Math.random().toString(36).substr(2, 9),
+                            avatar: '🎭',
+                            token: 'fake_token_' + Date.now()
+                        };
+                        
+                        localStorage.setItem('tiktok_account', JSON.stringify(currentAccount));
+                        showConnectedUI();
+                        showStatus('success', '✅ Connexion réussie!');
+                    }, 1000);
+                }
+            });
+        }
+        
+        // Changer de compte
+        function changeAccount() {
+            if (confirm('Voulez-vous vous connecter avec un autre compte TikTok?')) {
+                disconnect();
+                setTimeout(() => {
+                    connectToTikTok();
+                }, 500);
+            }
+        }
+        
+        // Se déconnecter
+        function disconnect() {
+            localStorage.removeItem('tiktok_account');
+            currentAccount = null;
+            showNotConnectedUI();
+            showStatus('info', '👋 Déconnecté de TikTok');
+        }
+        
         // Switch tabs
         function switchTab(tabName) {
             // Update nav
@@ -377,6 +582,11 @@
                 content.classList.remove('active');
             });
             document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Check account when switching to publish tab
+            if (tabName === 'publish') {
+                checkSavedAccount();
+            }
         }
 
         // OAuth functionality
@@ -417,6 +627,14 @@
                 <button class="copy-btn" onclick="copyUrl()">📋 Copier l'URL</button>
                 <span id="copyStatus"></span>
             `;
+            
+            // Envoyer un message à la fenêtre parente si c'est un callback OAuth
+            if (window.opener) {
+                window.opener.postMessage({ type: 'tiktok-auth-success', code: code }, '*');
+                setTimeout(() => {
+                    window.close();
+                }, 2000);
+            }
         } else {
             oauthContent.innerHTML = `
                 <div class="instructions">
@@ -523,6 +741,11 @@
                 return;
             }
             
+            if (!currentAccount) {
+                showStatus('error', 'Veuillez vous connecter à TikTok');
+                return;
+            }
+            
             publishBtn.disabled = true;
             publishBtn.innerHTML = '<span class="loading"></span>Publication en cours...';
             
@@ -532,6 +755,7 @@
             addTerminalLine('🎬 TikTok Private Publisher', 'success');
             addTerminalLine('==================================================');
             addTerminalLine('');
+            addTerminalLine(`👤 Compte: @${currentAccount.username}`);
             addTerminalLine(`📹 Fichier: ${selectedFile.name}`);
             addTerminalLine(`📏 Taille: ${formatFileSize(selectedFile.size)}`);
             addTerminalLine('');
@@ -542,19 +766,17 @@
                 // Simuler l'exécution du script Python
                 addTerminalLine('📱 ÉTAPE 1: AUTORISATION', 'info');
                 addTerminalLine('==================================================');
-                addTerminalLine('🔗 Connexion à TikTok...');
+                addTerminalLine('✅ Utilisation du token sauvegardé');
                 
-                await new Promise(resolve => setTimeout(resolve, 1500));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                addTerminalLine('✅ Code d\'autorisation obtenu', 'success');
                 addTerminalLine('');
-                
-                addTerminalLine('🔄 ÉTAPE 2: OBTENTION DU TOKEN', 'info');
+                addTerminalLine('🔄 ÉTAPE 2: VÉRIFICATION DU COMPTE', 'info');
                 addTerminalLine('==================================================');
                 
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                addTerminalLine('✅ Token obtenu', 'success');
+                addTerminalLine(`✅ Connecté en tant que: @${currentAccount.username}`, 'success');
                 addTerminalLine('');
                 
                 addTerminalLine('📤 ÉTAPE 3: PUBLICATION (private)', 'info');
@@ -586,12 +808,12 @@
                 
                 addTerminalLine('');
                 addTerminalLine('✅ VIDÉO PUBLIÉE AVEC SUCCÈS EN MODE PRIVATE!', 'success');
-                addTerminalLine('🎉 Ta vidéo est maintenant sur ton profil TikTok!');
+                addTerminalLine(`🎉 Ta vidéo est maintenant sur le profil @${currentAccount.username}!`);
                 addTerminalLine('🔒 Visibilité: Privée (visible par toi uniquement)');
                 addTerminalLine('');
                 addTerminalLine('🎬 Processus terminé!', 'success');
                 
-                showStatus('success', '✅ Vidéo publiée avec succès en mode privé sur TikTok!');
+                showStatus('success', `✅ Vidéo publiée avec succès sur @${currentAccount.username}!`);
                 
             } catch (error) {
                 addTerminalLine('❌ Erreur: ' + error.message, 'error');
@@ -600,6 +822,17 @@
             
             publishBtn.disabled = false;
             publishBtn.innerHTML = 'Publier une autre vidéo';
+        });
+        
+        // Check account on page load if on publish tab
+        window.addEventListener('load', () => {
+            if (!code && !error) {
+                // Not on OAuth callback, check if we're on publish tab
+                const hash = window.location.hash;
+                if (hash === '#publish' || !hash) {
+                    checkSavedAccount();
+                }
+            }
         });
     </script>
 </body>
