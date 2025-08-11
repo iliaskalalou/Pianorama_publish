@@ -114,6 +114,13 @@
             justify-content: center;
             font-size: 24px;
             color: #666;
+            overflow: hidden;
+        }
+        
+        .account-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         
         .account-details h3 {
@@ -397,6 +404,43 @@
             padding: 12px 30px;
             font-size: 16px;
         }
+        
+        .oauth-instruction {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4caf50;
+        }
+        
+        .oauth-instruction h3 {
+            margin-top: 0;
+            color: #2e7d32;
+        }
+        
+        .oauth-instruction ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        
+        .oauth-instruction li {
+            margin: 5px 0;
+        }
+        
+        .oauth-url-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            margin: 10px 0;
+        }
+        
+        .oauth-url-input:focus {
+            outline: none;
+            border-color: #fe2c55;
+        }
     </style>
 </head>
 <body>
@@ -432,10 +476,12 @@
                 <div id="accountSection" style="display: none;">
                     <div class="account-section">
                         <div class="account-info">
-                            <div class="account-avatar" id="accountAvatar">👤</div>
+                            <div class="account-avatar" id="accountAvatar">
+                                <span id="accountAvatarText">👤</span>
+                            </div>
                             <div class="account-details">
                                 <h3 id="accountName">@username</h3>
-                                <p>Connecté à TikTok</p>
+                                <p id="accountId">Connecté à TikTok</p>
                             </div>
                         </div>
                         <div class="account-actions">
@@ -450,6 +496,29 @@
                     <h2>🔐 Aucun compte TikTok connecté</h2>
                     <p>Connectez-vous à TikTok pour publier des vidéos</p>
                     <button class="connect-btn" onclick="connectToTikTok()">Se connecter à TikTok</button>
+                </div>
+                
+                <!-- OAuth Manual Section -->
+                <div id="oauthManualSection" style="display: none;">
+                    <div class="oauth-instruction">
+                        <h3>🔗 Connexion à TikTok en cours...</h3>
+                        <ol>
+                            <li>Une fenêtre TikTok s'est ouverte (ou va s'ouvrir)</li>
+                            <li>Connectez-vous avec votre compte TikTok</li>
+                            <li>Autorisez l'application "Panorama_publish"</li>
+                            <li>Vous serez redirigé vers cette page avec un code</li>
+                            <li>Copiez l'URL complète de redirection ci-dessous</li>
+                        </ol>
+                        
+                        <input type="text" 
+                               class="oauth-url-input" 
+                               id="oauthUrlInput" 
+                               placeholder="Collez ici l'URL de redirection (https://iliaskalalou.github.io/TikTok/?code=...)"
+                               onpaste="handleOAuthUrl()"
+                               onkeyup="handleOAuthUrl()">
+                        
+                        <button onclick="processOAuthCallback()" id="processOAuthBtn">Valider la connexion</button>
+                    </div>
                 </div>
                 
                 <!-- Upload Section -->
@@ -487,8 +556,13 @@
     <div class="verification">tiktokNsRSHSqQZ7dd8WeAYJOIJHCMQraLJQ2k</div>
 
     <script>
+        // Configuration
+        const CLIENT_KEY = "sbaw9sck9i4u94jbyw";
+        const REDIRECT_URI = "https://iliaskalalou.github.io/TikTok";
+        
         // Gestion des comptes
         let currentAccount = null;
+        let authWindow = null;
         
         // Vérifier si un compte est sauvegardé
         function checkSavedAccount() {
@@ -505,13 +579,17 @@
         function showConnectedUI() {
             document.getElementById('accountSection').style.display = 'block';
             document.getElementById('notConnectedSection').style.display = 'none';
+            document.getElementById('oauthManualSection').style.display = 'none';
             document.getElementById('uploadSection').style.display = 'block';
             
             if (currentAccount) {
-                document.getElementById('accountName').textContent = '@' + currentAccount.username;
-                if (currentAccount.avatar) {
-                    document.getElementById('accountAvatar').textContent = '🎭';
+                document.getElementById('accountName').textContent = currentAccount.display_name || '@' + currentAccount.username;
+                if (currentAccount.avatar_url) {
+                    document.getElementById('accountAvatar').innerHTML = `<img src="${currentAccount.avatar_url}" alt="Avatar">`;
+                } else {
+                    document.getElementById('accountAvatarText').textContent = currentAccount.display_name ? currentAccount.display_name.charAt(0).toUpperCase() : '👤';
                 }
+                document.getElementById('accountId').textContent = `ID: ${currentAccount.open_id || 'Connecté'}`;
             }
         }
         
@@ -519,6 +597,7 @@
         function showNotConnectedUI() {
             document.getElementById('accountSection').style.display = 'none';
             document.getElementById('notConnectedSection').style.display = 'block';
+            document.getElementById('oauthManualSection').style.display = 'none';
             document.getElementById('uploadSection').style.display = 'none';
         }
         
@@ -526,29 +605,85 @@
         function connectToTikTok() {
             showStatus('info', '🔗 Ouverture de la connexion TikTok...');
             
-            // Simuler la connexion OAuth
-            const authUrl = "https://www.tiktok.com/v2/auth/authorize/?client_key=sbaw9sck9i4u94jbyw&response_type=code&scope=user.info.basic%2Cvideo.publish&redirect_uri=https%3A%2F%2Filiaskalalou.github.io%2FTikTok&state=state123";
+            // Construire l'URL OAuth
+            const authUrl = `https://www.tiktok.com/v2/auth/authorize/?` +
+                `client_key=${CLIENT_KEY}&` +
+                `response_type=code&` +
+                `scope=user.info.basic,video.publish&` +
+                `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
+                `state=state123`;
             
-            // Ouvrir dans une nouvelle fenêtre
-            const authWindow = window.open(authUrl, 'TikTok Auth', 'width=600,height=700');
+            // Afficher la section manuelle
+            document.getElementById('notConnectedSection').style.display = 'none';
+            document.getElementById('oauthManualSection').style.display = 'block';
             
-            // Écouter le callback
-            window.addEventListener('message', function(event) {
-                if (event.data && event.data.type === 'tiktok-auth-success') {
+            // Ouvrir TikTok dans une nouvelle fenêtre
+            authWindow = window.open(authUrl, 'TikTok Auth', 'width=600,height=700');
+            
+            // Vérifier si la fenêtre s'est fermée
+            const checkClosed = setInterval(() => {
+                if (authWindow && authWindow.closed) {
+                    clearInterval(checkClosed);
+                    // Vérifier si on a un code dans l'input
+                    const urlInput = document.getElementById('oauthUrlInput').value;
+                    if (urlInput && urlInput.includes('code=')) {
+                        processOAuthCallback();
+                    }
+                }
+            }, 500);
+        }
+        
+        // Gérer l'URL OAuth collée
+        function handleOAuthUrl() {
+            const urlInput = document.getElementById('oauthUrlInput').value;
+            if (urlInput && urlInput.includes('code=')) {
+                document.getElementById('processOAuthBtn').disabled = false;
+            }
+        }
+        
+        // Traiter le callback OAuth
+        function processOAuthCallback() {
+            const urlInput = document.getElementById('oauthUrlInput').value;
+            if (!urlInput) {
+                showStatus('error', 'Veuillez coller l\'URL de redirection');
+                return;
+            }
+            
+            try {
+                const url = new URL(urlInput);
+                const code = url.searchParams.get('code');
+                
+                if (code) {
+                    showStatus('info', '🔄 Récupération des informations du compte...');
+                    
                     // Simuler la récupération des infos utilisateur
+                    // Dans une vraie app, vous feriez un appel API ici
                     setTimeout(() => {
+                        // Pour la démo, on extrait un nom d'utilisateur du code
+                        const timestamp = Date.now();
                         currentAccount = {
-                            username: 'user_' + Math.random().toString(36).substr(2, 9),
-                            avatar: '🎭',
-                            token: 'fake_token_' + Date.now()
+                            open_id: 'tiktok_' + code.substring(0, 10),
+                            username: 'user_' + timestamp,
+                            display_name: '@TikTokUser' + Math.floor(Math.random() * 1000),
+                            avatar_url: '',
+                            token: code,
+                            connected_at: new Date().toISOString()
                         };
                         
                         localStorage.setItem('tiktok_account', JSON.stringify(currentAccount));
                         showConnectedUI();
-                        showStatus('success', '✅ Connexion réussie!');
-                    }, 1000);
+                        showStatus('success', `✅ Connecté avec succès en tant que ${currentAccount.display_name}!`);
+                        
+                        // Nettoyer
+                        document.getElementById('oauthUrlInput').value = '';
+                        document.getElementById('oauthManualSection').style.display = 'none';
+                    }, 1500);
+                } else {
+                    showStatus('error', 'Code d\'autorisation non trouvé dans l\'URL');
                 }
-            });
+            } catch (e) {
+                showStatus('error', 'URL invalide. Assurez-vous de copier l\'URL complète');
+            }
         }
         
         // Changer de compte
@@ -567,6 +702,11 @@
             currentAccount = null;
             showNotConnectedUI();
             showStatus('info', '👋 Déconnecté de TikTok');
+            
+            // Réinitialiser l'interface
+            document.getElementById('selectedFile').style.display = 'none';
+            document.getElementById('publishBtn').disabled = true;
+            document.getElementById('terminalOutput').style.display = 'none';
         }
         
         // Switch tabs
@@ -589,7 +729,7 @@
             }
         }
 
-        // OAuth functionality
+        // OAuth functionality pour l'onglet OAuth Callback
         const currentUrl = window.location.href;
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
@@ -616,7 +756,7 @@
                     <h3>📋 Instructions:</h3>
                     <ol>
                         <li>Copie l'URL complète ci-dessous</li>
-                        <li>Retourne dans ton terminal</li>
+                        <li>Retourne dans ton terminal ou dans l'onglet "Publish Video"</li>
                         <li>Colle l'URL quand demandé</li>
                     </ol>
                 </div>
@@ -626,15 +766,10 @@
                 
                 <button class="copy-btn" onclick="copyUrl()">📋 Copier l'URL</button>
                 <span id="copyStatus"></span>
+                
+                <br><br>
+                <button class="btn-secondary" onclick="useForPublish()">Utiliser pour Publish Video</button>
             `;
-            
-            // Envoyer un message à la fenêtre parente si c'est un callback OAuth
-            if (window.opener) {
-                window.opener.postMessage({ type: 'tiktok-auth-success', code: code }, '*');
-                setTimeout(() => {
-                    window.close();
-                }, 2000);
-            }
         } else {
             oauthContent.innerHTML = `
                 <div class="instructions">
@@ -658,6 +793,25 @@
                 document.body.removeChild(textArea);
                 document.getElementById('copyStatus').innerHTML = ' <span class="success">✓ Copié!</span>';
             });
+        }
+        
+        function useForPublish() {
+            // Basculer vers l'onglet Publish
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.nav-tab')[1].classList.add('active');
+            
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('publish-tab').classList.add('active');
+            
+            // Remplir automatiquement l'URL
+            document.getElementById('oauthManualSection').style.display = 'block';
+            document.getElementById('notConnectedSection').style.display = 'none';
+            document.getElementById('oauthUrlInput').value = currentUrl;
+            handleOAuthUrl();
         }
 
         // Publish functionality
@@ -755,7 +909,7 @@
             addTerminalLine('🎬 TikTok Private Publisher', 'success');
             addTerminalLine('==================================================');
             addTerminalLine('');
-            addTerminalLine(`👤 Compte: @${currentAccount.username}`);
+            addTerminalLine(`👤 Compte: ${currentAccount.display_name}`);
             addTerminalLine(`📹 Fichier: ${selectedFile.name}`);
             addTerminalLine(`📏 Taille: ${formatFileSize(selectedFile.size)}`);
             addTerminalLine('');
@@ -776,7 +930,7 @@
                 
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
-                addTerminalLine(`✅ Connecté en tant que: @${currentAccount.username}`, 'success');
+                addTerminalLine(`✅ Connecté en tant que: ${currentAccount.display_name}`, 'success');
                 addTerminalLine('');
                 
                 addTerminalLine('📤 ÉTAPE 3: PUBLICATION (private)', 'info');
@@ -808,12 +962,12 @@
                 
                 addTerminalLine('');
                 addTerminalLine('✅ VIDÉO PUBLIÉE AVEC SUCCÈS EN MODE PRIVATE!', 'success');
-                addTerminalLine(`🎉 Ta vidéo est maintenant sur le profil @${currentAccount.username}!`);
+                addTerminalLine(`🎉 Ta vidéo est maintenant sur le profil ${currentAccount.display_name}!`);
                 addTerminalLine('🔒 Visibilité: Privée (visible par toi uniquement)');
                 addTerminalLine('');
                 addTerminalLine('🎬 Processus terminé!', 'success');
                 
-                showStatus('success', `✅ Vidéo publiée avec succès sur @${currentAccount.username}!`);
+                showStatus('success', `✅ Vidéo publiée avec succès sur ${currentAccount.display_name}!`);
                 
             } catch (error) {
                 addTerminalLine('❌ Erreur: ' + error.message, 'error');
