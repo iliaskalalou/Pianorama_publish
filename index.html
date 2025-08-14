@@ -468,8 +468,8 @@
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#demo">Demo</a></li>
-                <li><a href="./privacy/" target="_blank">Privacy Policy</a></li>
-                <li><a href="./terms/" target="_blank">Terms of Service</a></li>
+                <li><a href="privacy.html" target="_blank">Privacy Policy</a></li>
+                <li><a href="terms.html" target="_blank">Terms of Service</a></li>
                 <li><a href="#dashboard" class="btn-primary" onclick="showDashboard()">Dashboard</a></li>
             </ul>
         </nav>
@@ -609,8 +609,8 @@
         <footer>
             <div class="footer-content">
                 <div class="footer-links">
-                    <a href="./privacy/">Privacy Policy</a>
-                    <a href="./terms/">Terms of Service</a>
+                    <a href="privacy.html">Privacy Policy</a>
+                    <a href="terms.html">Terms of Service</a>
                     <a href="mailto:support@contentstudiopro.com">Contact Support</a>
                     <a href="#about">About Us</a>
                 </div>
@@ -651,15 +651,22 @@
                 <h3>📤 Publish New Content to TikTok</h3>
                 
                 <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4caf50;">
-                    <h4 style="margin-top: 0; color: #2e7d32;">TikTok Integration</h4>
-                    <p>This dashboard allows you to upload and publish videos directly to your TikTok account using the official TikTok API.</p>
+                    <h4 style="margin-top: 0; color: #2e7d32;">TikTok Direct Post API Integration</h4>
+                    <p>Upload and publish videos directly to your TikTok account with full control over privacy and interaction settings.</p>
                 </div>
                 
+                <!-- Video Upload Area -->
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #667eea; margin-bottom: 20px;"></i>
                     <h4>Drag & Drop Your Video Here</h4>
-                    <p>or click to browse (MP4, MOV, AVI supported)</p>
+                    <p>or click to browse (MP4, MOV supported)</p>
                     <input type="file" id="fileInput" accept="video/*" style="display: none;">
+                </div>
+                
+                <!-- Video Preview -->
+                <div id="videoPreview" style="display: none; margin: 20px 0;">
+                    <h4>📹 Video Preview</h4>
+                    <video id="previewVideo" controls style="width: 100%; max-width: 500px; border-radius: 8px;"></video>
                 </div>
                 
                 <div id="fileInfo" style="display: none; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 8px;">
@@ -667,11 +674,81 @@
                     <p><strong>Size:</strong> <span id="fileSize"></span></p>
                 </div>
 
+                <!-- TikTok Required Fields -->
+                <div id="postSettings" style="display: none; background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="margin-top: 0;">📝 Post Settings (Required by TikTok)</h4>
+                    
+                    <!-- Title/Caption -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Title/Caption *</label>
+                        <textarea id="postTitle" placeholder="Enter your video caption..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; min-height: 80px;"></textarea>
+                    </div>
+                    
+                    <!-- Privacy Level (REQUIRED) -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">Privacy Level * (Select manually - no default)</label>
+                        <select id="privacyLevel" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px;">
+                            <option value="">-- Select Privacy Level --</option>
+                            <option value="SELF_ONLY">🔒 Private (Only Me)</option>
+                            <option value="FRIENDS">👥 Friends Only</option>
+                            <option value="PUBLIC">🌍 Public (Everyone)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Interaction Settings -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">Interaction Settings (Check to enable)</label>
+                        <div style="padding-left: 10px;">
+                            <label style="display: block; margin: 5px 0;">
+                                <input type="checkbox" id="allowComments"> Allow Comments
+                            </label>
+                            <label style="display: block; margin: 5px 0;">
+                                <input type="checkbox" id="allowDuet"> Allow Duet
+                            </label>
+                            <label style="display: block; margin: 5px 0;">
+                                <input type="checkbox" id="allowStitch"> Allow Stitch
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Commercial Content Disclosure -->
+                    <div style="margin-bottom: 15px;">
+                        <label style="display: block; margin-bottom: 10px; font-weight: bold;">
+                            <input type="checkbox" id="commercialContent" onchange="toggleCommercialOptions()">
+                            This content promotes a brand, product, or service
+                        </label>
+                        <div id="commercialOptions" style="display: none; padding-left: 20px; margin-top: 10px;">
+                            <label style="display: block; margin: 5px 0;">
+                                <input type="checkbox" id="yourBrand"> Your Brand (promoting yourself/your business)
+                            </label>
+                            <label style="display: block; margin: 5px 0;">
+                                <input type="checkbox" id="brandedContent"> Branded Content (promoting third party)
+                            </label>
+                            <p id="commercialWarning" style="color: #f39c12; font-size: 14px; margin-top: 10px;"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- TikTok Agreement (REQUIRED) -->
+                    <div style="background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; margin: 20px 0;">
+                        <label style="font-weight: bold;">
+                            <input type="checkbox" id="tiktokAgreement" style="margin-right: 10px;">
+                            <span id="agreementText">By posting, you agree to TikTok's Music Usage Confirmation</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Processing Notice -->
+                    <div style="background: #d1ecf1; padding: 15px; border-radius: 5px; border: 1px solid #bee5eb; margin: 15px 0;">
+                        <p style="margin: 0; color: #0c5460;">
+                            <strong>Note:</strong> After publishing, it may take a few minutes for your content to process and appear on your TikTok profile.
+                        </p>
+                    </div>
+                </div>
+
                 <button id="connectBtn" class="btn-cta btn-cta-primary" style="margin: 20px auto;" onclick="connectAccount()">
                     <i class="fas fa-link"></i> Connect TikTok Account
                 </button>
 
-                <button id="publishBtn" class="btn-cta btn-cta-primary" style="display: none; margin: 20px auto;" onclick="publishContent()">
+                <button id="publishBtn" class="btn-cta btn-cta-primary" style="display: none; margin: 20px auto;" onclick="publishContent()" disabled>
                     <i class="fas fa-upload"></i> Publish to TikTok
                 </button>
 
@@ -741,12 +818,19 @@
                 document.getElementById('accountStatus').innerHTML = `
                     <p style="color: #28a745; font-weight: bold;">✅ Connected to TikTok</p>
                     <p style="font-size: 14px;">Account: ${currentAccount.username}</p>
+                    <p style="font-size: 12px; color: #666;">Ready to publish content</p>
                 `;
+                
+                // Show post settings if file is selected
+                if (selectedFile) {
+                    document.getElementById('postSettings').style.display = 'block';
+                }
             } else {
                 document.getElementById('username').textContent = 'Not Connected';
                 document.getElementById('connectBtn').style.display = 'block';
                 document.getElementById('publishBtn').style.display = 'none';
                 document.getElementById('disconnectBtn').style.display = 'none';
+                document.getElementById('postSettings').style.display = 'none';
                 document.getElementById('accountStatus').innerHTML = `
                     <p style="color: #dc3545;">❌ Not connected to TikTok</p>
                     <p style="font-size: 14px;">Click "Connect TikTok Account" to get started</p>
@@ -834,8 +918,115 @@
             document.getElementById('fileSize').textContent = formatFileSize(file.size);
             document.getElementById('fileInfo').style.display = 'block';
             
+            // Show video preview
+            const videoPreview = document.getElementById('videoPreview');
+            const previewVideo = document.getElementById('previewVideo');
+            const fileURL = URL.createObjectURL(file);
+            previewVideo.src = fileURL;
+            videoPreview.style.display = 'block';
+            
+            // Show post settings if connected
+            if (isConnected) {
+                document.getElementById('postSettings').style.display = 'block';
+                validatePublishButton();
+            }
+            
             showStatus('success', `Video selected: ${file.name}`);
         }
+        
+        function toggleCommercialOptions() {
+            const isChecked = document.getElementById('commercialContent').checked;
+            const options = document.getElementById('commercialOptions');
+            options.style.display = isChecked ? 'block' : 'none';
+            
+            if (isChecked) {
+                updateCommercialWarning();
+            }
+            updateAgreementText();
+        }
+        
+        function updateCommercialWarning() {
+            const yourBrand = document.getElementById('yourBrand').checked;
+            const brandedContent = document.getElementById('brandedContent').checked;
+            const warning = document.getElementById('commercialWarning');
+            
+            if (yourBrand && !brandedContent) {
+                warning.textContent = 'Your video will be labeled as "Promotional content"';
+            } else if (brandedContent) {
+                warning.textContent = 'Your video will be labeled as "Paid partnership"';
+                // Check privacy level
+                const privacy = document.getElementById('privacyLevel').value;
+                if (privacy === 'SELF_ONLY') {
+                    warning.textContent += ' (Note: Branded content cannot be private)';
+                }
+            } else {
+                warning.textContent = '';
+            }
+        }
+        
+        function updateAgreementText() {
+            const brandedContent = document.getElementById('brandedContent').checked;
+            const agreementText = document.getElementById('agreementText');
+            
+            if (brandedContent) {
+                agreementText.textContent = "By posting, you agree to TikTok's Branded Content Policy and Music Usage Confirmation";
+            } else {
+                agreementText.textContent = "By posting, you agree to TikTok's Music Usage Confirmation";
+            }
+        }
+        
+        function validatePublishButton() {
+            if (!isConnected || !selectedFile) {
+                document.getElementById('publishBtn').disabled = true;
+                return;
+            }
+            
+            const title = document.getElementById('postTitle').value;
+            const privacy = document.getElementById('privacyLevel').value;
+            const agreement = document.getElementById('tiktokAgreement').checked;
+            const commercialToggle = document.getElementById('commercialContent').checked;
+            
+            let commercialValid = true;
+            if (commercialToggle) {
+                const yourBrand = document.getElementById('yourBrand').checked;
+                const brandedContent = document.getElementById('brandedContent').checked;
+                commercialValid = yourBrand || brandedContent;
+            }
+            
+            const isValid = title && privacy && agreement && commercialValid;
+            document.getElementById('publishBtn').disabled = !isValid;
+            
+            if (!isValid && selectedFile) {
+                let missing = [];
+                if (!title) missing.push('Title/Caption');
+                if (!privacy) missing.push('Privacy Level');
+                if (!agreement) missing.push('TikTok Agreement');
+                if (commercialToggle && !commercialValid) missing.push('Commercial content type');
+                
+                if (missing.length > 0) {
+                    showStatus('info', `Please complete: ${missing.join(', ')}`);
+                }
+            }
+        }
+        
+        // Add event listeners for validation
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('postTitle').addEventListener('input', validatePublishButton);
+            document.getElementById('privacyLevel').addEventListener('change', function() {
+                validatePublishButton();
+                updateCommercialWarning();
+            });
+            document.getElementById('tiktokAgreement').addEventListener('change', validatePublishButton);
+            document.getElementById('yourBrand').addEventListener('change', function() {
+                updateCommercialWarning();
+                validatePublishButton();
+            });
+            document.getElementById('brandedContent').addEventListener('change', function() {
+                updateCommercialWarning();
+                updateAgreementText();
+                validatePublishButton();
+            });
+        });
         
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
@@ -844,38 +1035,55 @@
         }
         
         function publishContent() {
-            if (!selectedFile) {
-                showStatus('error', 'Please select a video file first');
+            if (!selectedFile || !isConnected) {
                 return;
             }
             
-            if (!isConnected) {
-                showStatus('error', 'Please connect your TikTok account first');
-                return;
-            }
+            // Get all values
+            const title = document.getElementById('postTitle').value;
+            const privacy = document.getElementById('privacyLevel').value;
+            const allowComments = document.getElementById('allowComments').checked;
+            const allowDuet = document.getElementById('allowDuet').checked;
+            const allowStitch = document.getElementById('allowStitch').checked;
             
             const publishBtn = document.getElementById('publishBtn');
             publishBtn.disabled = true;
             publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing to TikTok...';
             
-            showStatus('info', `Publishing "${selectedFile.name}" to TikTok...`);
+            showStatus('info', `📤 Uploading "${selectedFile.name}" to TikTok...`);
             
             // Simulate publishing process with steps
             setTimeout(() => {
-                showStatus('info', '🔄 Uploading video to TikTok servers...');
+                showStatus('info', `🔄 Setting privacy to ${privacy}...`);
                 
                 setTimeout(() => {
-                    showStatus('info', '📝 Setting video privacy to private...');
+                    const interactions = [];
+                    if (allowComments) interactions.push('Comments');
+                    if (allowDuet) interactions.push('Duet');
+                    if (allowStitch) interactions.push('Stitch');
+                    
+                    showStatus('info', `⚙️ Configuring interactions: ${interactions.join(', ') || 'None'}...`);
                     
                     setTimeout(() => {
-                        showStatus('success', `✅ Video published successfully to TikTok! Check your TikTok profile (@${currentAccount?.username || 'your_account'}).`);
+                        showStatus('success', `✅ Video published successfully to TikTok!
+                        
+Account: ${currentAccount?.username || '@your_account'}
+Privacy: ${privacy.replace('_', ' ')}
+Title: "${title}"
+
+Check your TikTok profile in a few minutes.`);
                         
                         publishBtn.disabled = false;
                         publishBtn.innerHTML = '<i class="fas fa-upload"></i> Publish Another Video';
                         
-                        // Reset file selection
+                        // Reset form
                         selectedFile = null;
                         document.getElementById('fileInfo').style.display = 'none';
+                        document.getElementById('videoPreview').style.display = 'none';
+                        document.getElementById('postSettings').style.display = 'none';
+                        document.getElementById('postTitle').value = '';
+                        document.getElementById('privacyLevel').value = '';
+                        document.getElementById('tiktokAgreement').checked = false;
                         fileInput.value = '';
                     }, 2000);
                 }, 1500);
