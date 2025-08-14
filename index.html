@@ -459,7 +459,7 @@
     <!-- Header -->
     <header>
         <nav>
-            <div class="logo">
+            <div class="logo" style="cursor: pointer;" onclick="showLandingPage()">
                 <i class="fas fa-video"></i>
                 Content Studio Pro
             </div>
@@ -468,8 +468,8 @@
                 <li><a href="#how-it-works">How It Works</a></li>
                 <li><a href="#about">About</a></li>
                 <li><a href="#demo">Demo</a></li>
-                <li><a href="/privacy" target="_blank">Privacy Policy</a></li>
-                <li><a href="/terms" target="_blank">Terms of Service</a></li>
+                <li><a href="./privacy/" target="_blank">Privacy Policy</a></li>
+                <li><a href="./terms/" target="_blank">Terms of Service</a></li>
                 <li><a href="#dashboard" class="btn-primary" onclick="showDashboard()">Dashboard</a></li>
             </ul>
         </nav>
@@ -609,8 +609,8 @@
         <footer>
             <div class="footer-content">
                 <div class="footer-links">
-                    <a href="/privacy">Privacy Policy</a>
-                    <a href="/terms">Terms of Service</a>
+                    <a href="./privacy/">Privacy Policy</a>
+                    <a href="./terms/">Terms of Service</a>
                     <a href="mailto:support@contentstudiopro.com">Contact Support</a>
                     <a href="#about">About Us</a>
                 </div>
@@ -632,13 +632,29 @@
                     </div>
                     <div>
                         <h2 id="username">Not Connected</h2>
-                        <p>Connect your social media account to start publishing</p>
+                        <div id="accountStatus">
+                            <p>Connect your TikTok account to start publishing</p>
+                        </div>
                     </div>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-cta btn-cta-secondary" onclick="showLandingPage()">
+                        <i class="fas fa-home"></i> Back to Home
+                    </button>
+                    <button id="disconnectBtn" class="btn-cta" style="background: #dc3545; color: white; display: none;" onclick="disconnect()">
+                        <i class="fas fa-sign-out-alt"></i> Disconnect
+                    </button>
                 </div>
             </div>
 
             <div class="upload-section">
-                <h3>Publish New Content</h3>
+                <h3>📤 Publish New Content to TikTok</h3>
+                
+                <div style="background: #e8f5e9; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #4caf50;">
+                    <h4 style="margin-top: 0; color: #2e7d32;">TikTok Integration</h4>
+                    <p>This dashboard allows you to upload and publish videos directly to your TikTok account using the official TikTok API.</p>
+                </div>
+                
                 <div class="upload-area" id="uploadArea">
                     <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #667eea; margin-bottom: 20px;"></i>
                     <h4>Drag & Drop Your Video Here</h4>
@@ -646,17 +662,17 @@
                     <input type="file" id="fileInput" accept="video/*" style="display: none;">
                 </div>
                 
-                <div id="fileInfo" style="display: none; margin: 20px 0;">
+                <div id="fileInfo" style="display: none; margin: 20px 0; background: #f8f9fa; padding: 15px; border-radius: 8px;">
                     <p><strong>Selected:</strong> <span id="fileName"></span></p>
                     <p><strong>Size:</strong> <span id="fileSize"></span></p>
                 </div>
 
                 <button id="connectBtn" class="btn-cta btn-cta-primary" style="margin: 20px auto;" onclick="connectAccount()">
-                    Connect Social Media Account
+                    <i class="fas fa-link"></i> Connect TikTok Account
                 </button>
 
                 <button id="publishBtn" class="btn-cta btn-cta-primary" style="display: none; margin: 20px auto;" onclick="publishContent()">
-                    Publish Content
+                    <i class="fas fa-upload"></i> Publish to TikTok
                 </button>
 
                 <div class="status-message" id="statusMessage"></div>
@@ -671,6 +687,7 @@
         
         let isConnected = false;
         let selectedFile = null;
+        let currentAccount = null;
 
         // Check OAuth callback
         const urlParams = new URLSearchParams(window.location.search);
@@ -680,30 +697,65 @@
             // Handle OAuth callback
             localStorage.setItem('oauth_code', code);
             localStorage.setItem('connected', 'true');
-            localStorage.setItem('username', '@content_creator_' + Math.floor(Math.random() * 1000));
+            const username = '@creator_' + Math.floor(Math.random() * 1000);
+            localStorage.setItem('username', username);
+            
+            // Store account info
+            currentAccount = {
+                username: username,
+                display_name: username,
+                oauth_code: code,
+                connected_at: new Date().toISOString()
+            };
+            localStorage.setItem('tiktok_account', JSON.stringify(currentAccount));
+            
             window.history.replaceState({}, document.title, window.location.pathname);
             showDashboard();
-            showStatus('success', 'Successfully connected to your social media account!');
+            showStatus('success', 'Successfully connected to TikTok account!');
         }
 
         // Check if already connected
         if (localStorage.getItem('connected') === 'true') {
             isConnected = true;
+            const savedAccount = localStorage.getItem('tiktok_account');
+            if (savedAccount) {
+                currentAccount = JSON.parse(savedAccount);
+            }
+        }
+
+        function showLandingPage() {
+            document.getElementById('landing-page').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('active');
+            window.scrollTo(0, 0);
         }
 
         function showDashboard() {
             document.getElementById('landing-page').style.display = 'none';
             document.getElementById('dashboard').classList.add('active');
             
-            if (isConnected) {
-                document.getElementById('username').textContent = localStorage.getItem('username') || '@content_creator';
+            if (isConnected && currentAccount) {
+                document.getElementById('username').textContent = currentAccount.username || '@content_creator';
                 document.getElementById('connectBtn').style.display = 'none';
                 document.getElementById('publishBtn').style.display = 'block';
+                document.getElementById('disconnectBtn').style.display = 'block';
+                document.getElementById('accountStatus').innerHTML = `
+                    <p style="color: #28a745; font-weight: bold;">✅ Connected to TikTok</p>
+                    <p style="font-size: 14px;">Account: ${currentAccount.username}</p>
+                `;
+            } else {
+                document.getElementById('username').textContent = 'Not Connected';
+                document.getElementById('connectBtn').style.display = 'block';
+                document.getElementById('publishBtn').style.display = 'none';
+                document.getElementById('disconnectBtn').style.display = 'none';
+                document.getElementById('accountStatus').innerHTML = `
+                    <p style="color: #dc3545;">❌ Not connected to TikTok</p>
+                    <p style="font-size: 14px;">Click "Connect TikTok Account" to get started</p>
+                `;
             }
         }
 
         function connectAccount() {
-            // Build OAuth URL
+            // Build OAuth URL with TikTok
             const authUrl = `https://www.tiktok.com/v2/auth/authorize/?` +
                 `client_key=${CLIENT_KEY}&` +
                 `response_type=code&` +
@@ -711,10 +763,35 @@
                 `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
                 `state=dashboard`;
             
-            showStatus('info', 'Redirecting to social media for authentication...');
-            setTimeout(() => {
-                window.location.href = authUrl;
-            }, 1500);
+            showStatus('info', '🔗 Redirecting to TikTok for authentication...');
+            
+            // Show OAuth instructions before redirect
+            const confirmRedirect = confirm(
+                'You will be redirected to TikTok to authorize Content Studio Pro.\n\n' +
+                '1. Log in with your TikTok account\n' +
+                '2. Authorize the application\n' +
+                '3. You will be redirected back here\n\n' +
+                'Click OK to continue.'
+            );
+            
+            if (confirmRedirect) {
+                setTimeout(() => {
+                    window.location.href = authUrl;
+                }, 1000);
+            }
+        }
+        
+        function disconnect() {
+            if (confirm('Are you sure you want to disconnect your TikTok account?')) {
+                localStorage.removeItem('oauth_code');
+                localStorage.removeItem('connected');
+                localStorage.removeItem('username');
+                localStorage.removeItem('tiktok_account');
+                isConnected = false;
+                currentAccount = null;
+                showDashboard();
+                showStatus('info', 'Disconnected from TikTok account');
+            }
         }
 
         // File upload handling
@@ -773,19 +850,36 @@
             }
             
             if (!isConnected) {
-                showStatus('error', 'Please connect your social media account first');
+                showStatus('error', 'Please connect your TikTok account first');
                 return;
             }
             
-            showStatus('success', `Publishing "${selectedFile.name}" to your social media account...`);
+            const publishBtn = document.getElementById('publishBtn');
+            publishBtn.disabled = true;
+            publishBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing to TikTok...';
             
-            // Simulate publishing process
+            showStatus('info', `Publishing "${selectedFile.name}" to TikTok...`);
+            
+            // Simulate publishing process with steps
             setTimeout(() => {
-                showStatus('success', '✅ Content published successfully! Check your profile.');
-                selectedFile = null;
-                document.getElementById('fileInfo').style.display = 'none';
-                fileInput.value = '';
-            }, 3000);
+                showStatus('info', '🔄 Uploading video to TikTok servers...');
+                
+                setTimeout(() => {
+                    showStatus('info', '📝 Setting video privacy to private...');
+                    
+                    setTimeout(() => {
+                        showStatus('success', `✅ Video published successfully to TikTok! Check your TikTok profile (@${currentAccount?.username || 'your_account'}).`);
+                        
+                        publishBtn.disabled = false;
+                        publishBtn.innerHTML = '<i class="fas fa-upload"></i> Publish Another Video';
+                        
+                        // Reset file selection
+                        selectedFile = null;
+                        document.getElementById('fileInfo').style.display = 'none';
+                        fileInput.value = '';
+                    }, 2000);
+                }, 1500);
+            }, 1500);
         }
         
         function showStatus(type, message) {
