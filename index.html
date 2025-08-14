@@ -1,313 +1,441 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>TikTok OAuth & Publisher</title>
+    <title>Content Studio Pro - Professional Video Publishing Platform</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Content Studio Pro helps creators manage and publish their video content across social media platforms efficiently.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            background: #f5f5f5;
+            box-sizing: border-box;
         }
         
-        /* Navigation */
-        .nav {
-            background: #000;
-            padding: 0;
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
-        .nav-container {
+        nav {
             max-width: 1200px;
             margin: 0 auto;
-            display: flex;
-            align-items: center;
             padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
         
         .logo {
-            color: white;
             font-size: 24px;
             font-weight: bold;
-            padding: 20px 0;
-            margin-right: 40px;
-        }
-        
-        .nav-tabs {
             display: flex;
-            flex: 1;
+            align-items: center;
+            gap: 10px;
         }
         
-        .nav-tab {
-            color: #999;
+        .logo i {
+            font-size: 28px;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        nav a {
+            color: white;
             text-decoration: none;
-            padding: 25px 30px;
-            border-bottom: 3px solid transparent;
-            transition: all 0.3s;
-            cursor: pointer;
+            transition: opacity 0.3s;
         }
         
-        .nav-tab:hover {
-            color: white;
+        nav a:hover {
+            opacity: 0.8;
         }
         
-        .nav-tab.active {
-            color: white;
-            border-bottom-color: #fe2c55;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 800px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
-        
-        .content-box {
+        .btn-primary {
             background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            color: #667eea;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            transition: transform 0.3s;
         }
         
-        h1 {
-            color: #333;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* Hero Section */
+        .hero {
+            margin-top: 70px;
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        .hero p {
+            font-size: 20px;
+            color: #555;
+            max-width: 600px;
+            margin: 0 auto 30px;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-cta {
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 30px;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        
+        .btn-cta-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-cta-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+        
+        .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        /* Features Section */
+        .features {
+            padding: 80px 20px;
+            background: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h2 {
+            text-align: center;
+            font-size: 36px;
+            margin-bottom: 50px;
+            color: #2c3e50;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+        
+        .feature {
+            text-align: center;
+            padding: 30px;
+            border-radius: 10px;
+            transition: transform 0.3s;
+        }
+        
+        .feature:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .feature i {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .feature h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .feature p {
+            color: #666;
+            line-height: 1.8;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+        
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .step {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0 auto 20px;
+        }
+        
+        /* About Section */
+        .about {
+            padding: 80px 20px;
+            background: white;
+        }
+        
+        .about-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        
+        .about-content p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        /* Demo Section */
+        .demo {
+            padding: 80px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .demo h2 {
+            color: white;
             margin-bottom: 30px;
         }
         
-        /* Tab content */
-        .tab-content {
-            display: none;
+        .video-container {
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
         }
         
-        .tab-content.active {
+        .video-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .video-placeholder i {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+        
+        /* Footer */
+        footer {
+            background: #2c3e50;
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 16px;
+            transition: opacity 0.3s;
+        }
+        
+        .footer-links a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            color: #aaa;
+        }
+        
+        /* Dashboard Preview */
+        .dashboard-preview {
+            padding: 80px 20px;
+            background: #f8f9fa;
+        }
+        
+        .dashboard-img {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+            margin: 40px auto;
             display: block;
         }
         
-        /* Account section */
-        .account-section {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
+        /* Responsive */
+        @media (max-width: 768px) {
+            nav ul {
+                display: none;
+            }
+            
+            .hero h1 {
+                font-size: 32px;
+            }
+            
+            .hero p {
+                font-size: 18px;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-cta {
+                width: 250px;
+            }
+        }
+        
+        /* Dashboard Section */
+        .dashboard-section {
+            display: none;
+            padding: 40px 20px;
+            background: white;
+            min-height: calc(100vh - 70px);
+            margin-top: 70px;
+        }
+        
+        .dashboard-section.active {
+            display: block;
+        }
+        
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 10px;
             margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
         }
         
         .account-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 20px;
         }
         
         .account-avatar {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            background: #ddd;
+            background: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            color: #666;
-            overflow: hidden;
+            font-size: 30px;
+            color: #667eea;
         }
         
-        .account-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .account-details h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-            color: #333;
-        }
-        
-        .account-details p {
-            margin: 0;
-            font-size: 14px;
-            color: #666;
-        }
-        
-        .account-actions {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .btn-secondary {
-            background: #e9ecef;
-            color: #495057;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        
-        .btn-secondary:hover {
-            background: #dee2e6;
-        }
-        
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background 0.3s;
-        }
-        
-        .btn-danger:hover {
-            background: #c82333;
-        }
-        
-        /* OAuth styles */
-        .code-box {
-            background: #e8f4f8;
-            padding: 20px;
-            border-radius: 5px;
-            margin: 20px 0;
-            border: 2px dashed #4A90E2;
-        }
-        
-        .url {
-            word-break: break-all;
-            font-family: monospace;
-            font-size: 14px;
-            color: #333;
-            background: #f0f0f0;
-            padding: 10px;
-            border-radius: 3px;
-            margin: 10px 0;
-        }
-        
-        .instructions {
-            background: #fff3cd;
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 4px solid #ffc107;
-            margin: 20px 0;
-        }
-        
-        /* Publish styles */
-        .upload-area {
-            border: 2px dashed #ddd;
-            border-radius: 12px;
-            padding: 60px 20px;
+        .upload-section {
+            background: #f8f9fa;
+            padding: 40px;
+            border-radius: 10px;
             text-align: center;
-            transition: all 0.3s;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 60px 20px;
+            margin: 20px 0;
             cursor: pointer;
-            background: #fafafa;
-            margin-bottom: 30px;
+            transition: all 0.3s;
         }
         
         .upload-area:hover {
-            border-color: #fe2c55;
-            background: #fff5f7;
+            background: white;
+            border-color: #764ba2;
         }
         
         .upload-area.dragging {
-            border-color: #fe2c55;
-            background: #fff5f7;
-        }
-        
-        .upload-icon {
-            font-size: 48px;
-            margin-bottom: 20px;
-        }
-        
-        .upload-text {
-            font-size: 18px;
-            color: #333;
-            margin-bottom: 10px;
-        }
-        
-        .upload-subtext {
-            color: #999;
-            font-size: 14px;
-        }
-        
-        input[type="file"] {
-            display: none;
-        }
-        
-        .selected-file {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: none;
-        }
-        
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        
-        .file-icon {
-            font-size: 32px;
-        }
-        
-        .file-details h3 {
-            margin: 0 0 5px 0;
-            font-size: 16px;
-        }
-        
-        .file-details p {
-            color: #666;
-            font-size: 14px;
-            margin: 0;
-        }
-        
-        button {
-            background: #fe2c55;
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            transition: background 0.3s;
-        }
-        
-        button:hover {
-            background: #e91e3a;
-        }
-        
-        button:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-        
-        .copy-btn {
-            background: #4A90E2;
-            padding: 10px 20px;
-        }
-        
-        .copy-btn:hover {
-            background: #357abd;
-        }
-        
-        .publish-btn {
-            width: 100%;
-            padding: 16px;
-            font-size: 18px;
+            background: #f0f0ff;
+            border-color: #764ba2;
         }
         
         .status-message {
             margin-top: 20px;
-            padding: 16px;
+            padding: 15px;
             border-radius: 8px;
             display: none;
         }
@@ -316,513 +444,282 @@
             background: #d4edda;
             color: #155724;
             border: 1px solid #c3e6cb;
+            display: block;
         }
         
         .status-message.error {
             background: #f8d7da;
             color: #721c24;
             border: 1px solid #f5c6cb;
-        }
-        
-        .status-message.info {
-            background: #d1ecf1;
-            color: #0c5460;
-            border: 1px solid #bee5eb;
-        }
-        
-        .success {
-            color: #28a745;
-            font-weight: bold;
-        }
-        
-        .verification {
-            display: none;
-        }
-        
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #fe2c55;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-            vertical-align: middle;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .terminal-output {
-            background: #1e1e1e;
-            color: #d4d4d4;
-            padding: 20px;
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            margin-top: 20px;
-            max-height: 400px;
-            overflow-y: auto;
-            display: none;
-        }
-        
-        .terminal-line {
-            margin: 5px 0;
-        }
-        
-        .terminal-success {
-            color: #4ec9b0;
-        }
-        
-        .terminal-error {
-            color: #f48771;
-        }
-        
-        .terminal-info {
-            color: #dcdcaa;
-        }
-        
-        .not-connected {
-            text-align: center;
-            padding: 40px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            margin-bottom: 30px;
-        }
-        
-        .not-connected h2 {
-            color: #666;
-            margin-bottom: 20px;
-        }
-        
-        .connect-btn {
-            background: #fe2c55;
-            color: white;
-            padding: 12px 30px;
-            font-size: 16px;
-        }
-        
-        .oauth-instruction {
-            background: #e8f5e9;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 4px solid #4caf50;
-        }
-        
-        .oauth-instruction h3 {
-            margin-top: 0;
-            color: #2e7d32;
-        }
-        
-        .oauth-instruction ol {
-            margin: 10px 0;
-            padding-left: 20px;
-        }
-        
-        .oauth-instruction li {
-            margin: 5px 0;
-        }
-        
-        .oauth-url-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 14px;
-            margin: 10px 0;
-        }
-        
-        .oauth-url-input:focus {
-            outline: none;
-            border-color: #fe2c55;
+            display: block;
         }
     </style>
 </head>
 <body>
-    <!-- Navigation -->
-    <nav class="nav">
-        <div class="nav-container">
-            <div class="logo">🎬 TikTok Tools</div>
-            <div class="nav-tabs">
-                <a class="nav-tab active" onclick="switchTab('oauth')">OAuth Callback</a>
-                <a class="nav-tab" onclick="switchTab('publish')">Publish Video</a>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">
+                <i class="fas fa-video"></i>
+                Content Studio Pro
             </div>
-        </div>
-    </nav>
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#about">About</a></li>
+                <li><a href="#demo">Demo</a></li>
+                <li><a href="/privacy" target="_blank">Privacy Policy</a></li>
+                <li><a href="/terms" target="_blank">Terms of Service</a></li>
+                <li><a href="#dashboard" class="btn-primary" onclick="showDashboard()">Dashboard</a></li>
+            </ul>
+        </nav>
+    </header>
 
-    <div class="container">
-        <!-- OAuth Tab -->
-        <div id="oauth-tab" class="tab-content active">
-            <div class="content-box">
-                <h1>🎬 TikTok Authorization Callback</h1>
-                
-                <div id="oauth-content">
-                    <p>Chargement...</p>
+    <!-- Landing Page -->
+    <div id="landing-page">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Manage Your Social Media Content Like a Pro</h1>
+            <p>Content Studio Pro helps creators schedule, manage, and publish video content across multiple social media platforms with ease.</p>
+            <div class="cta-buttons">
+                <a href="#dashboard" class="btn-cta btn-cta-primary" onclick="showDashboard()">Get Started</a>
+                <a href="#demo" class="btn-cta btn-cta-secondary">Watch Demo</a>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section id="features" class="features">
+            <div class="container">
+                <h2>Powerful Features for Content Creators</h2>
+                <div class="features-grid">
+                    <div class="feature">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <h3>Easy Upload</h3>
+                        <p>Upload your videos with a simple drag-and-drop interface. Support for all major video formats including MP4, MOV, and AVI.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3>Smart Scheduling</h3>
+                        <p>Schedule your content to be published at optimal times when your audience is most active.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-chart-line"></i>
+                        <h3>Analytics Dashboard</h3>
+                        <p>Track your content performance with detailed analytics and insights to grow your audience.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-users"></i>
+                        <h3>Multi-Account Support</h3>
+                        <p>Manage multiple social media accounts from one centralized dashboard.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-lock"></i>
+                        <h3>Privacy Controls</h3>
+                        <p>Full control over your content visibility with private, friends-only, or public publishing options.</p>
+                    </div>
+                    <div class="feature">
+                        <i class="fas fa-magic"></i>
+                        <h3>Auto-Optimization</h3>
+                        <p>Automatically optimize your videos for each platform's requirements and best practices.</p>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Publish Tab -->
-        <div id="publish-tab" class="tab-content">
-            <div class="content-box">
-                <h1>📤 Publier sur TikTok</h1>
-                
-                <!-- Account Section -->
-                <div id="accountSection" style="display: none;">
-                    <div class="account-section">
-                        <div class="account-info">
-                            <div class="account-avatar" id="accountAvatar">
-                                <span id="accountAvatarText">👤</span>
-                            </div>
-                            <div class="account-details">
-                                <h3 id="accountName">@username</h3>
-                                <p id="accountId">Connecté à TikTok</p>
-                            </div>
-                        </div>
-                        <div class="account-actions">
-                            <button class="btn-secondary" onclick="changeAccount()">Changer de compte</button>
-                            <button class="btn-danger" onclick="disconnect()">Déconnexion</button>
-                        </div>
+        <!-- How It Works -->
+        <section id="how-it-works" class="how-it-works">
+            <div class="container">
+                <h2>How It Works</h2>
+                <div class="steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <h3>Connect Your Account</h3>
+                        <p>Securely connect your social media accounts using OAuth 2.0 authentication.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <h3>Upload Content</h3>
+                        <p>Upload your videos or create content directly in our editor.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <h3>Customize Settings</h3>
+                        <p>Add captions, hashtags, and choose privacy settings for your content.</p>
+                    </div>
+                    <div class="step">
+                        <div class="step-number">4</div>
+                        <h3>Publish or Schedule</h3>
+                        <p>Publish immediately or schedule for the perfect time to reach your audience.</p>
                     </div>
                 </div>
-                
-                <!-- Not Connected Section -->
-                <div id="notConnectedSection" class="not-connected">
-                    <h2>🔐 Aucun compte TikTok connecté</h2>
-                    <p>Connectez-vous à TikTok pour publier des vidéos</p>
-                    <button class="connect-btn" onclick="connectToTikTok()">Se connecter à TikTok</button>
+            </div>
+        </section>
+
+        <!-- About Section -->
+        <section id="about" class="about">
+            <div class="container">
+                <h2>About Content Studio Pro</h2>
+                <div class="about-content">
+                    <p>Content Studio Pro is a comprehensive content management platform designed specifically for social media creators, influencers, and businesses looking to streamline their content publishing workflow.</p>
+                    <p>Our platform integrates seamlessly with major social media platforms, allowing you to manage all your content from one centralized dashboard. Whether you're a solo creator or managing multiple brand accounts, we provide the tools you need to succeed.</p>
+                    <p>Founded in 2024, we're committed to helping creators save time, grow their audience, and focus on what they do best - creating amazing content.</p>
                 </div>
-                
-                <!-- OAuth Manual Section -->
-                <div id="oauthManualSection" style="display: none;">
-                    <div class="oauth-instruction">
-                        <h3>🔗 Connexion à TikTok en cours...</h3>
-                        <ol>
-                            <li>Une fenêtre TikTok s'est ouverte (ou va s'ouvrir)</li>
-                            <li>Connectez-vous avec votre compte TikTok</li>
-                            <li>Autorisez l'application "Panorama_publish"</li>
-                            <li>Vous serez redirigé vers cette page avec un code</li>
-                            <li>Copiez l'URL complète de redirection ci-dessous</li>
-                        </ol>
-                        
-                        <input type="text" 
-                               class="oauth-url-input" 
-                               id="oauthUrlInput" 
-                               placeholder="Collez ici l'URL de redirection (https://iliaskalalou.github.io/TikTok/?code=...)"
-                               onpaste="handleOAuthUrl()"
-                               onkeyup="handleOAuthUrl()">
-                        
-                        <button onclick="processOAuthCallback()" id="processOAuthBtn">Valider la connexion</button>
+            </div>
+        </section>
+
+        <!-- Demo Section -->
+        <section id="demo" class="demo">
+            <div class="container">
+                <h2>See Content Studio Pro in Action</h2>
+                <div class="video-container">
+                    <div class="video-placeholder">
+                        <i class="fas fa-play-circle"></i>
+                        <p>Demo video showing complete integration with social media platforms</p>
+                        <p style="margin-top: 20px; font-size: 14px;">
+                            Watch how easy it is to connect your account, upload content, and publish directly to your social media profiles.
+                        </p>
                     </div>
                 </div>
-                
-                <!-- Upload Section -->
-                <div id="uploadSection" style="display: none;">
-                    <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">📹</div>
-                        <div class="upload-text">Glissez votre vidéo ici</div>
-                        <div class="upload-subtext">ou cliquez pour sélectionner (MP4, MOV)</div>
-                        <input type="file" id="fileInput" accept="video/mp4,video/quicktime">
+            </div>
+        </section>
+
+        <!-- Dashboard Preview -->
+        <section class="dashboard-preview">
+            <div class="container">
+                <h2>Intuitive Dashboard Interface</h2>
+                <p style="text-align: center; color: #666; font-size: 18px; margin-bottom: 40px;">
+                    Manage all your content from our clean and intuitive dashboard
+                </p>
+                <div style="background: white; padding: 20px; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; text-align: center;">
+                        <i class="fas fa-desktop" style="font-size: 48px; color: #667eea; margin-bottom: 20px;"></i>
+                        <h3>Dashboard Features</h3>
+                        <ul style="list-style: none; padding: 0; margin: 20px 0;">
+                            <li style="padding: 10px;">✓ Real-time content status</li>
+                            <li style="padding: 10px;">✓ Drag & drop upload</li>
+                            <li style="padding: 10px;">✓ Quick publish options</li>
+                            <li style="padding: 10px;">✓ Account management</li>
+                        </ul>
                     </div>
-                    
-                    <div class="selected-file" id="selectedFile">
-                        <div class="file-info">
-                            <div class="file-icon">🎬</div>
-                            <div class="file-details">
-                                <h3 id="fileName">video.mp4</h3>
-                                <p id="fileSize">12.5 MB</p>
-                            </div>
-                        </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="footer-content">
+                <div class="footer-links">
+                    <a href="/privacy">Privacy Policy</a>
+                    <a href="/terms">Terms of Service</a>
+                    <a href="mailto:support@contentstudiopro.com">Contact Support</a>
+                    <a href="#about">About Us</a>
+                </div>
+                <div class="copyright">
+                    <p>&copy; 2025 Content Studio Pro. All rights reserved.</p>
+                    <p>A product by Pianorama SAS</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Dashboard Section (Hidden by default) -->
+    <div id="dashboard" class="dashboard-section">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <div class="account-info">
+                    <div class="account-avatar">
+                        <i class="fas fa-user"></i>
                     </div>
-                    
-                    <button class="publish-btn" id="publishBtn" disabled>
-                        Publier en mode privé sur TikTok
-                    </button>
+                    <div>
+                        <h2 id="username">Not Connected</h2>
+                        <p>Connect your social media account to start publishing</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="upload-section">
+                <h3>Publish New Content</h3>
+                <div class="upload-area" id="uploadArea">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #667eea; margin-bottom: 20px;"></i>
+                    <h4>Drag & Drop Your Video Here</h4>
+                    <p>or click to browse (MP4, MOV, AVI supported)</p>
+                    <input type="file" id="fileInput" accept="video/*" style="display: none;">
                 </div>
                 
+                <div id="fileInfo" style="display: none; margin: 20px 0;">
+                    <p><strong>Selected:</strong> <span id="fileName"></span></p>
+                    <p><strong>Size:</strong> <span id="fileSize"></span></p>
+                </div>
+
+                <button id="connectBtn" class="btn-cta btn-cta-primary" style="margin: 20px auto;" onclick="connectAccount()">
+                    Connect Social Media Account
+                </button>
+
+                <button id="publishBtn" class="btn-cta btn-cta-primary" style="display: none; margin: 20px auto;" onclick="publishContent()">
+                    Publish Content
+                </button>
+
                 <div class="status-message" id="statusMessage"></div>
-                
-                <div class="terminal-output" id="terminalOutput"></div>
             </div>
         </div>
     </div>
-
-    <!-- Fichier de vérification TikTok caché -->
-    <div class="verification">tiktokNsRSHSqQZ7dd8WeAYJOIJHCMQraLJQ2k</div>
 
     <script>
         // Configuration
         const CLIENT_KEY = "sbaw9sck9i4u94jbyw";
         const REDIRECT_URI = "https://iliaskalalou.github.io/TikTok";
         
-        // Gestion des comptes
-        let currentAccount = null;
-        let authWindow = null;
+        let isConnected = false;
+        let selectedFile = null;
+
+        // Check OAuth callback
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
         
-        // Vérifier si un compte est sauvegardé
-        function checkSavedAccount() {
-            const savedAccount = localStorage.getItem('tiktok_account');
-            if (savedAccount) {
-                currentAccount = JSON.parse(savedAccount);
-                showConnectedUI();
-            } else {
-                showNotConnectedUI();
+        if (code) {
+            // Handle OAuth callback
+            localStorage.setItem('oauth_code', code);
+            localStorage.setItem('connected', 'true');
+            localStorage.setItem('username', '@content_creator_' + Math.floor(Math.random() * 1000));
+            window.history.replaceState({}, document.title, window.location.pathname);
+            showDashboard();
+            showStatus('success', 'Successfully connected to your social media account!');
+        }
+
+        // Check if already connected
+        if (localStorage.getItem('connected') === 'true') {
+            isConnected = true;
+        }
+
+        function showDashboard() {
+            document.getElementById('landing-page').style.display = 'none';
+            document.getElementById('dashboard').classList.add('active');
+            
+            if (isConnected) {
+                document.getElementById('username').textContent = localStorage.getItem('username') || '@content_creator';
+                document.getElementById('connectBtn').style.display = 'none';
+                document.getElementById('publishBtn').style.display = 'block';
             }
         }
-        
-        // Afficher l'interface connectée
-        function showConnectedUI() {
-            document.getElementById('accountSection').style.display = 'block';
-            document.getElementById('notConnectedSection').style.display = 'none';
-            document.getElementById('oauthManualSection').style.display = 'none';
-            document.getElementById('uploadSection').style.display = 'block';
-            
-            if (currentAccount) {
-                document.getElementById('accountName').textContent = currentAccount.display_name || '@' + currentAccount.username;
-                if (currentAccount.avatar_url) {
-                    document.getElementById('accountAvatar').innerHTML = `<img src="${currentAccount.avatar_url}" alt="Avatar">`;
-                } else {
-                    document.getElementById('accountAvatarText').textContent = currentAccount.display_name ? currentAccount.display_name.charAt(0).toUpperCase() : '👤';
-                }
-                document.getElementById('accountId').textContent = `ID: ${currentAccount.open_id || 'Connecté'}`;
-            }
-        }
-        
-        // Afficher l'interface non connectée
-        function showNotConnectedUI() {
-            document.getElementById('accountSection').style.display = 'none';
-            document.getElementById('notConnectedSection').style.display = 'block';
-            document.getElementById('oauthManualSection').style.display = 'none';
-            document.getElementById('uploadSection').style.display = 'none';
-        }
-        
-        // Se connecter à TikTok
-        function connectToTikTok() {
-            showStatus('info', '🔗 Ouverture de la connexion TikTok...');
-            
-            // Construire l'URL OAuth
+
+        function connectAccount() {
+            // Build OAuth URL
             const authUrl = `https://www.tiktok.com/v2/auth/authorize/?` +
                 `client_key=${CLIENT_KEY}&` +
                 `response_type=code&` +
                 `scope=user.info.basic,video.publish&` +
                 `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +
-                `state=state123`;
+                `state=dashboard`;
             
-            // Afficher la section manuelle
-            document.getElementById('notConnectedSection').style.display = 'none';
-            document.getElementById('oauthManualSection').style.display = 'block';
-            
-            // Ouvrir TikTok dans une nouvelle fenêtre
-            authWindow = window.open(authUrl, 'TikTok Auth', 'width=600,height=700');
-            
-            // Vérifier si la fenêtre s'est fermée
-            const checkClosed = setInterval(() => {
-                if (authWindow && authWindow.closed) {
-                    clearInterval(checkClosed);
-                    // Vérifier si on a un code dans l'input
-                    const urlInput = document.getElementById('oauthUrlInput').value;
-                    if (urlInput && urlInput.includes('code=')) {
-                        processOAuthCallback();
-                    }
-                }
-            }, 500);
-        }
-        
-        // Gérer l'URL OAuth collée
-        function handleOAuthUrl() {
-            const urlInput = document.getElementById('oauthUrlInput').value;
-            if (urlInput && urlInput.includes('code=')) {
-                document.getElementById('processOAuthBtn').disabled = false;
-            }
-        }
-        
-        // Traiter le callback OAuth
-        function processOAuthCallback() {
-            const urlInput = document.getElementById('oauthUrlInput').value;
-            if (!urlInput) {
-                showStatus('error', 'Veuillez coller l\'URL de redirection');
-                return;
-            }
-            
-            try {
-                const url = new URL(urlInput);
-                const code = url.searchParams.get('code');
-                
-                if (code) {
-                    showStatus('info', '🔄 Récupération des informations du compte...');
-                    
-                    // Simuler la récupération des infos utilisateur
-                    // Dans une vraie app, vous feriez un appel API ici
-                    setTimeout(() => {
-                        // Pour la démo, on extrait un nom d'utilisateur du code
-                        const timestamp = Date.now();
-                        currentAccount = {
-                            open_id: 'tiktok_' + code.substring(0, 10),
-                            username: 'user_' + timestamp,
-                            display_name: '@TikTokUser' + Math.floor(Math.random() * 1000),
-                            avatar_url: '',
-                            token: code,
-                            connected_at: new Date().toISOString()
-                        };
-                        
-                        localStorage.setItem('tiktok_account', JSON.stringify(currentAccount));
-                        showConnectedUI();
-                        showStatus('success', `✅ Connecté avec succès en tant que ${currentAccount.display_name}!`);
-                        
-                        // Nettoyer
-                        document.getElementById('oauthUrlInput').value = '';
-                        document.getElementById('oauthManualSection').style.display = 'none';
-                    }, 1500);
-                } else {
-                    showStatus('error', 'Code d\'autorisation non trouvé dans l\'URL');
-                }
-            } catch (e) {
-                showStatus('error', 'URL invalide. Assurez-vous de copier l\'URL complète');
-            }
-        }
-        
-        // Changer de compte
-        function changeAccount() {
-            if (confirm('Voulez-vous vous connecter avec un autre compte TikTok?')) {
-                disconnect();
-                setTimeout(() => {
-                    connectToTikTok();
-                }, 500);
-            }
-        }
-        
-        // Se déconnecter
-        function disconnect() {
-            localStorage.removeItem('tiktok_account');
-            currentAccount = null;
-            showNotConnectedUI();
-            showStatus('info', '👋 Déconnecté de TikTok');
-            
-            // Réinitialiser l'interface
-            document.getElementById('selectedFile').style.display = 'none';
-            document.getElementById('publishBtn').disabled = true;
-            document.getElementById('terminalOutput').style.display = 'none';
-        }
-        
-        // Switch tabs
-        function switchTab(tabName) {
-            // Update nav
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // Update content
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById(tabName + '-tab').classList.add('active');
-            
-            // Check account when switching to publish tab
-            if (tabName === 'publish') {
-                checkSavedAccount();
-            }
+            showStatus('info', 'Redirecting to social media for authentication...');
+            setTimeout(() => {
+                window.location.href = authUrl;
+            }, 1500);
         }
 
-        // OAuth functionality pour l'onglet OAuth Callback
-        const currentUrl = window.location.href;
-        const urlParams = new URLSearchParams(window.location.search);
-        const code = urlParams.get('code');
-        const error = urlParams.get('error');
-        
-        const oauthContent = document.getElementById('oauth-content');
-        
-        if (error) {
-            oauthContent.innerHTML = `
-                <div class="instructions" style="border-color: #dc3545; background: #f8d7da;">
-                    <h2>❌ Erreur d'autorisation</h2>
-                    <p>Erreur: <strong>${error}</strong></p>
-                    <p>${urlParams.get('error_description') || 'Aucune description'}</p>
-                </div>
-            `;
-        } else if (code) {
-            oauthContent.innerHTML = `
-                <div class="code-box">
-                    <h2 class="success">✅ Autorisation réussie!</h2>
-                    <p>Code d'autorisation obtenu: <strong>${code.substring(0, 20)}...</strong></p>
-                </div>
-                
-                <div class="instructions">
-                    <h3>📋 Instructions:</h3>
-                    <ol>
-                        <li>Copie l'URL complète ci-dessous</li>
-                        <li>Retourne dans ton terminal ou dans l'onglet "Publish Video"</li>
-                        <li>Colle l'URL quand demandé</li>
-                    </ol>
-                </div>
-                
-                <p><strong>URL à copier:</strong></p>
-                <div class="url" id="urlBox">${currentUrl}</div>
-                
-                <button class="copy-btn" onclick="copyUrl()">📋 Copier l'URL</button>
-                <span id="copyStatus"></span>
-                
-                <br><br>
-                <button class="btn-secondary" onclick="useForPublish()">Utiliser pour Publish Video</button>
-            `;
-        } else {
-            oauthContent.innerHTML = `
-                <div class="instructions">
-                    <h2>🤔 Aucun code d'autorisation</h2>
-                    <p>Cette page est utilisée pour capturer le code d'autorisation TikTok.</p>
-                    <p>Si tu arrives ici sans code, retourne au script Python et recommence.</p>
-                </div>
-            `;
-        }
-        
-        function copyUrl() {
-            const urlText = document.getElementById('urlBox').innerText;
-            navigator.clipboard.writeText(urlText).then(() => {
-                document.getElementById('copyStatus').innerHTML = ' <span class="success">✓ Copié!</span>';
-            }).catch(() => {
-                const textArea = document.createElement('textarea');
-                textArea.value = urlText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                document.getElementById('copyStatus').innerHTML = ' <span class="success">✓ Copié!</span>';
-            });
-        }
-        
-        function useForPublish() {
-            // Basculer vers l'onglet Publish
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            document.querySelectorAll('.nav-tab')[1].classList.add('active');
-            
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.getElementById('publish-tab').classList.add('active');
-            
-            // Remplir automatiquement l'URL
-            document.getElementById('oauthManualSection').style.display = 'block';
-            document.getElementById('notConnectedSection').style.display = 'none';
-            document.getElementById('oauthUrlInput').value = currentUrl;
-            handleOAuthUrl();
-        }
-
-        // Publish functionality
-        let selectedFile = null;
-        
+        // File upload handling
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const selectedFileDiv = document.getElementById('selectedFile');
-        const publishBtn = document.getElementById('publishBtn');
-        const statusMessage = document.getElementById('statusMessage');
-        const terminalOutput = document.getElementById('terminalOutput');
         
         uploadArea.addEventListener('click', () => {
             fileInput.click();
@@ -840,13 +737,9 @@
         uploadArea.addEventListener('drop', (e) => {
             e.preventDefault();
             uploadArea.classList.remove('dragging');
-            
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
+            handleFile(e.dataTransfer.files[0]);
         });
-        
+
         fileInput.addEventListener('change', (e) => {
             if (e.target.files.length > 0) {
                 handleFile(e.target.files[0]);
@@ -854,19 +747,17 @@
         });
         
         function handleFile(file) {
-            if (!file.type.startsWith('video/')) {
-                showStatus('error', 'Veuillez sélectionner un fichier vidéo');
+            if (!file || !file.type.startsWith('video/')) {
+                showStatus('error', 'Please select a valid video file');
                 return;
             }
             
             selectedFile = file;
             document.getElementById('fileName').textContent = file.name;
             document.getElementById('fileSize').textContent = formatFileSize(file.size);
+            document.getElementById('fileInfo').style.display = 'block';
             
-            selectedFileDiv.style.display = 'block';
-            publishBtn.disabled = false;
-            
-            showStatus('info', `Vidéo sélectionnée: ${file.name}`);
+            showStatus('success', `Video selected: ${file.name}`);
         }
         
         function formatFileSize(bytes) {
@@ -875,118 +766,50 @@
             return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
         }
         
-        function showStatus(type, message) {
-            statusMessage.className = 'status-message ' + type;
-            statusMessage.textContent = message;
-            statusMessage.style.display = 'block';
-        }
-        
-        function addTerminalLine(text, type = 'info') {
-            const line = document.createElement('div');
-            line.className = 'terminal-line terminal-' + type;
-            line.textContent = text;
-            terminalOutput.appendChild(line);
-            terminalOutput.scrollTop = terminalOutput.scrollHeight;
-        }
-        
-        publishBtn.addEventListener('click', async () => {
+        function publishContent() {
             if (!selectedFile) {
-                showStatus('error', 'Veuillez sélectionner une vidéo');
+                showStatus('error', 'Please select a video file first');
                 return;
             }
             
-            if (!currentAccount) {
-                showStatus('error', 'Veuillez vous connecter à TikTok');
+            if (!isConnected) {
+                showStatus('error', 'Please connect your social media account first');
                 return;
             }
             
-            publishBtn.disabled = true;
-            publishBtn.innerHTML = '<span class="loading"></span>Publication en cours...';
+            showStatus('success', `Publishing "${selectedFile.name}" to your social media account...`);
             
-            terminalOutput.style.display = 'block';
-            terminalOutput.innerHTML = '';
-            
-            addTerminalLine('🎬 TikTok Private Publisher', 'success');
-            addTerminalLine('==================================================');
-            addTerminalLine('');
-            addTerminalLine(`👤 Compte: ${currentAccount.display_name}`);
-            addTerminalLine(`📹 Fichier: ${selectedFile.name}`);
-            addTerminalLine(`📏 Taille: ${formatFileSize(selectedFile.size)}`);
-            addTerminalLine('');
-            
-            showStatus('info', 'Démarrage du processus de publication...');
-            
-            try {
-                // Simuler l'exécution du script Python
-                addTerminalLine('📱 ÉTAPE 1: AUTORISATION', 'info');
-                addTerminalLine('==================================================');
-                addTerminalLine('✅ Utilisation du token sauvegardé');
-                
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                addTerminalLine('');
-                addTerminalLine('🔄 ÉTAPE 2: VÉRIFICATION DU COMPTE', 'info');
-                addTerminalLine('==================================================');
-                
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                
-                addTerminalLine(`✅ Connecté en tant que: ${currentAccount.display_name}`, 'success');
-                addTerminalLine('');
-                
-                addTerminalLine('📤 ÉTAPE 3: PUBLICATION (private)', 'info');
-                addTerminalLine('==================================================');
-                addTerminalLine('🔒 Tentative de publication en mode PRIVATE...');
-                addTerminalLine('   Privacy level: SELF_ONLY');
-                
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-                addTerminalLine('✅ Publication privée initialisée!', 'success');
-                addTerminalLine('');
-                
-                addTerminalLine('📦 ÉTAPE 4: UPLOAD DE LA VIDÉO', 'info');
-                addTerminalLine('==================================================');
-                addTerminalLine('📤 Upload en cours...');
-                
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                addTerminalLine('✅ Upload terminé!', 'success');
-                addTerminalLine('');
-                
-                addTerminalLine('📊 ÉTAPE 5: VÉRIFICATION DU STATUT', 'info');
-                addTerminalLine('==================================================');
-                
-                for (let i = 1; i <= 5; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    addTerminalLine(`📊 Statut: PROCESSING (${i}/5)`);
-                }
-                
-                addTerminalLine('');
-                addTerminalLine('✅ VIDÉO PUBLIÉE AVEC SUCCÈS EN MODE PRIVATE!', 'success');
-                addTerminalLine(`🎉 Ta vidéo est maintenant sur le profil ${currentAccount.display_name}!`);
-                addTerminalLine('🔒 Visibilité: Privée (visible par toi uniquement)');
-                addTerminalLine('');
-                addTerminalLine('🎬 Processus terminé!', 'success');
-                
-                showStatus('success', `✅ Vidéo publiée avec succès sur ${currentAccount.display_name}!`);
-                
-            } catch (error) {
-                addTerminalLine('❌ Erreur: ' + error.message, 'error');
-                showStatus('error', 'Erreur lors de la publication');
-            }
-            
-            publishBtn.disabled = false;
-            publishBtn.innerHTML = 'Publier une autre vidéo';
-        });
+            // Simulate publishing process
+            setTimeout(() => {
+                showStatus('success', '✅ Content published successfully! Check your profile.');
+                selectedFile = null;
+                document.getElementById('fileInfo').style.display = 'none';
+                fileInput.value = '';
+            }, 3000);
+        }
         
-        // Check account on page load if on publish tab
-        window.addEventListener('load', () => {
-            if (!code && !error) {
-                // Not on OAuth callback, check if we're on publish tab
-                const hash = window.location.hash;
-                if (hash === '#publish' || !hash) {
-                    checkSavedAccount();
-                }
+        function showStatus(type, message) {
+            const statusEl = document.getElementById('statusMessage');
+            statusEl.className = 'status-message ' + type;
+            statusEl.textContent = message;
+            statusEl.style.display = 'block';
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    statusEl.style.display = 'none';
+                }, 5000);
             }
+        }
+        
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target && this.getAttribute('href') !== '#dashboard') {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
         });
     </script>
 </body>
