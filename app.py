@@ -51,7 +51,7 @@ INSTAGRAM_REDIRECT_URI = f"{BACKEND_URL}/instagram/callback"
 INSTAGRAM_SCOPES = "instagram_business_basic,instagram_business_content_publish"
 INSTAGRAM_GRAPH_VERSION = "v23.0"
 
-VERSION = "v2.3-2026-05-16-instagram"
+VERSION = "v2.4-2026-05-20-tiktok-audit-ui"
 
 
 @app.route('/')
@@ -227,29 +227,57 @@ def _post_to_tiktok(init_url, init_body, file_bytes, token):
     return 200, {"publish_id": publish_id}
 
 
+def _read_bool_form(field: str, default: bool = False) -> bool:
+    """Parse a 'true'/'false' string from the multipart form body."""
+    raw = request.form.get(field)
+    if raw is None:
+        return default
+    return raw.strip().lower() == "true"
+
+
 @app.route('/api/publish', methods=['POST'])
 def publish_video():
     """Direct Post: publish a video straight to the user's TikTok profile.
     Uses the video.publish scope. The privacy level chosen by the user is
-    applied to the published content."""
+    applied to the published content, along with the creator's commercial
+    disclosure and interaction settings (Allow Comments / Duet / Stitch)."""
     token = _read_token()
     if not token:
         return jsonify({"error": "No token provided"}), 401
 
-    title = request.form.get('title', 'Video from Pianorama Publish')
+    title = request.form.get('title', 'Video from Content Studio Pro')
     privacy = request.form.get('privacy', 'SELF_ONLY')
+    # UI sends commercial=true/false; UI sends disable_comment/duet/stitch as
+    # "true" when the corresponding "Allow X" toggle is UNCHECKED.
+    is_commercial = _read_bool_form('commercial', False)
+    disable_comment = _read_bool_form('disable_comment', False)
+    disable_duet = _read_bool_form('disable_duet', False)
+    disable_stitch = _read_bool_form('disable_stitch', False)
+
     filename, file_bytes = _read_video_file()
     if not file_bytes:
         return jsonify({"success": False, "message": "No video file provided"}), 400
+
+    # Branded content cannot be set to SELF_ONLY (TikTok policy).
+    if is_commercial and privacy == "SELF_ONLY":
+        return jsonify({
+            "success": False,
+            "error": {"code": "invalid_branded_content_privacy",
+                      "message": "Branded content cannot be set to private (SELF_ONLY)."},
+        }), 400
 
     init_body = {
         "post_info": {
             "title": title,
             "privacy_level": privacy,
-            "disable_duet": False,
-            "disable_comment": False,
-            "disable_stitch": False,
+            "disable_duet": disable_duet,
+            "disable_comment": disable_comment,
+            "disable_stitch": disable_stitch,
             "video_cover_timestamp_ms": 0,
+            # Commercial-content disclosure flags forwarded to TikTok exactly
+            # as the creator set them on the dashboard. Off by default.
+            "brand_content_toggle": is_commercial,
+            "brand_organic_toggle": is_commercial,
         },
         "source_info": {
             "source": "FILE_UPLOAD",

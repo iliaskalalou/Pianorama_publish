@@ -294,6 +294,30 @@
         .checkbox-row label { font-size: 14px; cursor: pointer; flex: 1; }
         .checkbox-row .help { margin-top: 4px; }
 
+        .video-preview {
+            width: 100%;
+            max-height: 360px;
+            border-radius: 10px;
+            background: #000;
+            display: block;
+        }
+        .branded-content-notice {
+            margin-top: 10px;
+            padding: 10px 12px;
+            background: var(--accent-soft);
+            border-left: 3px solid var(--accent);
+            border-radius: 6px;
+            color: var(--text);
+        }
+        .branded-content-notice a { color: var(--accent); font-weight: 500; text-decoration: underline; }
+        .music-usage-confirmation {
+            margin-top: 14px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .music-usage-confirmation a { color: var(--accent); text-decoration: underline; }
+
         .site-footer {
             background: var(--bg-soft);
             border-top: 1px solid var(--border);
@@ -469,6 +493,12 @@
                             <p class="help">Formats: MP4 or MOV. Max 287 MB.</p>
                         </div>
 
+                        <div class="form-section" id="video-preview-section" style="display:none;">
+                            <label class="label">Preview</label>
+                            <video id="video-preview" controls preload="metadata" class="video-preview"></video>
+                            <p class="help">Review your video before publishing.</p>
+                        </div>
+
                         <div class="form-section">
                             <label class="label" for="caption">Caption</label>
                             <textarea id="caption" rows="3" placeholder="Write a caption..."></textarea>
@@ -495,6 +525,28 @@
                                     <p class="help">Required to be disclosed when commercial. Off by default.</p>
                                 </label>
                             </div>
+                            <p class="help branded-content-notice" id="branded-content-notice" style="display:none;">
+                                When commercial disclosure is enabled, your post is subject to TikTok's
+                                <a href="https://www.tiktok.com/legal/page/global/bc-policy/en" target="_blank" rel="noopener">Branded Content Policy</a>.
+                                Branded content cannot be set to "Private — only me".
+                            </p>
+                        </div>
+
+                        <div class="form-section">
+                            <label class="label">Interaction settings</label>
+                            <p class="help" style="margin-bottom: 10px;">Choose what viewers can do with this post. All allowed by default.</p>
+                            <div class="checkbox-row">
+                                <input type="checkbox" id="allow-comment" checked>
+                                <label for="allow-comment">Allow comments</label>
+                            </div>
+                            <div class="checkbox-row" style="margin-top:8px;">
+                                <input type="checkbox" id="allow-duet" checked>
+                                <label for="allow-duet">Allow Duet</label>
+                            </div>
+                            <div class="checkbox-row" style="margin-top:8px;">
+                                <input type="checkbox" id="allow-stitch" checked>
+                                <label for="allow-stitch">Allow Stitch</label>
+                            </div>
                         </div>
 
                         <div class="form-section">
@@ -511,6 +563,10 @@
                                     Save as draft
                                 </button>
                             </div>
+                            <p class="help music-usage-confirmation">
+                                By posting, you agree to TikTok's
+                                <a href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noopener">Music Usage Confirmation</a>.
+                            </p>
                         </div>
                     </form>
                 </div>
@@ -616,6 +672,32 @@
         function updateFileLabel() {
             const file = fileInput.files[0];
             filenameLabel.textContent = file ? file.name : '';
+            const previewSection = $('#video-preview-section');
+            const preview = $('#video-preview');
+            if (file) {
+                if (preview.src && preview.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(preview.src);
+                }
+                preview.src = URL.createObjectURL(file);
+                previewSection.style.display = '';
+            } else {
+                if (preview.src && preview.src.startsWith('blob:')) {
+                    URL.revokeObjectURL(preview.src);
+                }
+                preview.removeAttribute('src');
+                preview.load();
+                previewSection.style.display = 'none';
+            }
+        }
+
+        // Show / hide the Branded Content Policy notice when the commercial
+        // disclosure toggle changes.
+        const commercialEl = $('#commercial');
+        const brandedNotice = $('#branded-content-notice');
+        if (commercialEl && brandedNotice) {
+            commercialEl.addEventListener('change', () => {
+                brandedNotice.style.display = commercialEl.checked ? '' : 'none';
+            });
         }
 
         async function sendPost(endpoint, requirePrivacy, btn, busyLabel, defaultLabel, successMessage) {
@@ -629,6 +711,11 @@
                 showStatus('error', 'Please select a privacy level.');
                 return;
             }
+            const isCommercial = $('#commercial').checked;
+            if (requirePrivacy && isCommercial && privacy === 'SELF_ONLY') {
+                showStatus('error', 'Branded content cannot be set to "Private — only me". Please choose a different privacy level or disable the commercial disclosure.');
+                return;
+            }
             const token = sessionStorage.getItem('access_token');
             if (!token) {
                 showStatus('error', 'Your session has expired. Please reconnect.');
@@ -638,13 +725,21 @@
             const previousLabel = btn.textContent;
             btn.textContent = busyLabel;
 
+            // Interaction settings — UI shows "Allow X", TikTok API expects "disable_X".
+            const disableComment = !$('#allow-comment').checked;
+            const disableDuet = !$('#allow-duet').checked;
+            const disableStitch = !$('#allow-stitch').checked;
+
             // Send the actual file bytes to the backend so it can call the
             // real TikTok Content Posting API.
             const formData = new FormData();
             formData.append('video', file);
             formData.append('title', $('#caption').value);
             formData.append('privacy', privacy || '');
-            formData.append('commercial', $('#commercial').checked ? 'true' : 'false');
+            formData.append('commercial', isCommercial ? 'true' : 'false');
+            formData.append('disable_comment', disableComment ? 'true' : 'false');
+            formData.append('disable_duet', disableDuet ? 'true' : 'false');
+            formData.append('disable_stitch', disableStitch ? 'true' : 'false');
 
             try {
                 const resp = await fetch(BACKEND_URL + endpoint, {
