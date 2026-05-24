@@ -51,7 +51,7 @@ INSTAGRAM_REDIRECT_URI = f"{BACKEND_URL}/instagram/callback"
 INSTAGRAM_SCOPES = "instagram_business_basic,instagram_business_content_publish"
 INSTAGRAM_GRAPH_VERSION = "v23.0"
 
-VERSION = "v2.4-2026-05-20-tiktok-audit-ui"
+VERSION = "v2.5-2026-05-24-instagram-async"
 
 
 @app.route('/')
@@ -72,7 +72,9 @@ def home():
             "/instagram/deauthorize": "Webhook called by Meta when a user revokes our app",
             "/instagram/data-deletion-callback": "Webhook called by Meta when a user requests deletion",
             "/api/instagram/user-info": "Get connected Instagram creator profile",
-            "/api/instagram/publish": "Publish a video as a Reel on Instagram",
+            "/api/instagram/publish": "Step 1: upload video + create Instagram container (returns container_id)",
+            "/api/instagram/publish/status": "Step 2: poll container status_code until FINISHED",
+            "/api/instagram/publish/finalize": "Step 3: publish the container (returns final media_id)",
         }
     })
 
@@ -573,12 +575,14 @@ def instagram_user_info():
 
 @app.route('/api/instagram/publish', methods=['POST'])
 def instagram_publish():
-    """Publish a video as an Instagram Reel.
-    Flow (pull-from-URL):
-      1. Host the uploaded bytes temporarily at /instagram/tmp-video/<id>
-      2. Create a media container (media_type=REELS, video_url=tmp URL)
-      3. Poll the container until status_code == FINISHED
-      4. Publish the container via /media_publish
+    """Step 1 of the Instagram publish flow.
+    Uploads the video bytes, hosts them temporarily, creates an Instagram
+    media container, and returns the container_id immediately.
+
+    Render's free tier has a request timeout (~30-100s) so we cannot wait
+    for Instagram to finish processing the container in the same call.
+    The client must then poll /api/instagram/publish/status and call
+    /api/instagram/publish/finalize when the container is FINISHED.
     """
     if not _instagram_configured():
         return jsonify({"error": "Instagram not configured"}), 503
@@ -610,7 +614,7 @@ def instagram_publish():
         app.logger.error(f"Instagram /me failed: {me_data}")
         return jsonify({"error": "Could not resolve Instagram user id", "details": me_data}), 400
 
-    # 3) Create the media container
+    # 3) Create the media container (returns immediately)
     try:
         container_resp = requests.post(
             f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}/{ig_user_id}/media",
@@ -621,7 +625,7 @@ def instagram_publish():
                 "share_to_feed": "true" if share_to_feed else "false",
                 "access_token": token,
             },
-            timeout=30,
+            timeout=20,
         )
         container_data = container_resp.json()
     except Exception as e:
@@ -631,51 +635,83 @@ def instagram_publish():
         app.logger.error(f"Instagram container creation failed: {container_data}")
         return jsonify({"error": "Container creation failed", "details": container_data}), 400
 
-    # 4) Poll until container is ready
-    deadline = time.time() + 180
-    last_status = None
-    while time.time() < deadline:
-        time.sleep(3)
-        try:
-            status_resp = requests.get(
-                f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}/{container_id}",
-                params={"fields": "status_code,status", "access_token": token},
-                timeout=10,
-            )
-            status_data = status_resp.json()
-        except Exception as e:
-            app.logger.warning(f"Instagram status check failed: {e}")
-            continue
-        last_status = status_data.get("status_code")
-        if last_status == "FINISHED":
-            break
-        if last_status in ("ERROR", "EXPIRED"):
-            app.logger.error(f"Instagram container processing failed: {status_data}")
-            return jsonify({"error": "Container processing failed", "details": status_data}), 500
-    else:
-        return jsonify({"error": "Container processing timeout", "last_status": last_status}), 504
+    return jsonify({
+        "success": True,
+        "stage": "container_created",
+        "container_id": container_id,
+        "ig_user_id": ig_user_id,
+        "filename": filename,
+        "share_to_feed": share_to_feed,
+        "video_url": video_url,
+        "next_step": "Poll GET /api/instagram/publish/status?container_id=<id> until status_code == FINISHED, then POST /api/instagram/publish/finalize with container_id and ig_user_id.",
+    })
 
-    # 5) Publish
+
+@app.route('/api/instagram/publish/status')
+def instagram_publish_status():
+    """Step 2 of the Instagram publish flow.
+    Returns the current status_code for a media container. The client should
+    poll this every 3-5 seconds until status_code == FINISHED (or ERROR).
+    """
+    if not _instagram_configured():
+        return jsonify({"error": "Instagram not configured"}), 503
+    token = _read_token()
+    if not token:
+        return jsonify({"error": "No token provided"}), 401
+    container_id = request.args.get('container_id', '').strip()
+    if not container_id:
+        return jsonify({"error": "Missing container_id"}), 400
+    try:
+        status_resp = requests.get(
+            f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}/{container_id}",
+            params={"fields": "status_code,status", "access_token": token},
+            timeout=10,
+        )
+        status_data = status_resp.json()
+    except Exception as e:
+        return jsonify({"error": f"Status check failed: {e}"}), 502
+    if status_resp.status_code != 200:
+        return jsonify({"error": "Instagram returned non-200", "details": status_data}), status_resp.status_code
+    return jsonify({
+        "container_id": container_id,
+        "status_code": status_data.get("status_code"),
+        "status": status_data.get("status"),
+    })
+
+
+@app.route('/api/instagram/publish/finalize', methods=['POST'])
+def instagram_publish_finalize():
+    """Step 3 of the Instagram publish flow.
+    Publishes a media container that has reached status_code == FINISHED.
+    Returns the final media_id.
+    """
+    if not _instagram_configured():
+        return jsonify({"error": "Instagram not configured"}), 503
+    token = _read_token()
+    if not token:
+        return jsonify({"error": "No token provided"}), 401
+    container_id = (request.form.get('container_id') or request.json and request.json.get('container_id') or '').strip()
+    ig_user_id = (request.form.get('ig_user_id') or request.json and request.json.get('ig_user_id') or '').strip()
+    if not container_id or not ig_user_id:
+        return jsonify({"error": "Missing container_id or ig_user_id"}), 400
     try:
         publish_resp = requests.post(
             f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}/{ig_user_id}/media_publish",
             params={"creation_id": container_id, "access_token": token},
-            timeout=30,
+            timeout=20,
         )
         publish_data = publish_resp.json()
     except Exception as e:
-        return jsonify({"error": f"Publish call failed: {e}"}), 500
+        return jsonify({"error": f"Publish call failed: {e}"}), 502
     media_id = publish_data.get("id")
     if not media_id:
         app.logger.error(f"Instagram publish failed: {publish_data}")
         return jsonify({"error": "Publish failed", "details": publish_data}), 400
-
     return jsonify({
         "success": True,
+        "stage": "published",
         "media_id": media_id,
         "container_id": container_id,
-        "filename": filename,
-        "share_to_feed": share_to_feed,
         "message": f"Reel published on Instagram (media_id={media_id}).",
     })
 
