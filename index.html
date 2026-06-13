@@ -634,6 +634,11 @@
             const token = params.get('token');
             if (token) {
                 sessionStorage.setItem('access_token', token);
+                // Store the pipeline credentials (refresh_token + open_id) so they
+                // can be retrieved from the console for automation setup.
+                if (params.get('refresh_token')) sessionStorage.setItem('refresh_token', params.get('refresh_token'));
+                if (params.get('open_id')) sessionStorage.setItem('open_id', params.get('open_id'));
+                if (params.get('expires_in')) sessionStorage.setItem('expires_in', params.get('expires_in'));
                 showStatus('success', 'Account connected successfully.');
                 fetchUserInfo(token);
                 history.replaceState({}, document.title, window.location.pathname + '#dashboard');

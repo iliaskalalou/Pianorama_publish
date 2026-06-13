@@ -51,7 +51,7 @@ INSTAGRAM_REDIRECT_URI = f"{BACKEND_URL}/instagram/callback"
 INSTAGRAM_SCOPES = "instagram_business_basic,instagram_business_content_publish"
 INSTAGRAM_GRAPH_VERSION = "v23.0"
 
-VERSION = "v2.5-2026-05-24-instagram-async"
+VERSION = "v2.6-2026-06-14-refresh-token"
 
 
 @app.route('/')
@@ -131,7 +131,19 @@ def callback():
     # V2 response: access_token is at the top level, not under "data".
     access_token = result.get("access_token")
     if response.status_code == 200 and access_token:
-        return redirect(f"{FRONTEND_URL}?token={access_token}&success=true")
+        # Also forward the refresh_token + open_id so a pipeline can store the
+        # refresh_token (valid ~365 days) and auto-renew the access_token
+        # without a manual re-login. open_id identifies which account this is.
+        from urllib.parse import urlencode as _ue
+        params = {
+            "token": access_token,
+            "refresh_token": result.get("refresh_token", ""),
+            "expires_in": result.get("expires_in", ""),
+            "refresh_expires_in": result.get("refresh_expires_in", ""),
+            "open_id": result.get("open_id", ""),
+            "success": "true",
+        }
+        return redirect(f"{FRONTEND_URL}?{_ue(params)}")
 
     # Log the actual TikTok error to make future debugging possible.
     app.logger.error(
