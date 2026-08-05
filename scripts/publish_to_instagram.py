@@ -151,16 +151,20 @@ def query_user_info(token: str) -> dict:
 #   2. GET  /api/instagram/publish/status -> poll status_code until FINISHED
 #   3. POST /api/instagram/publish/finalize -> publishes the container
 # ------------------------------------------------------------------
-def _publish_step1_create_container(token, video_path, caption, share_to_feed):
+def _publish_step1_create_container(token, video_path, caption, share_to_feed,
+                                    is_ai_generated=False):
     print(f"  [Step 1/3] Upload {video_path.name} + create Instagram container...")
     file_size = video_path.stat().st_size
     print(f"  Taille : {file_size / 1024 / 1024:.1f} MB")
+    if is_ai_generated:
+        print("  Contenu declare comme genere par IA (is_ai_generated=true)")
 
     with video_path.open("rb") as f:
         files = {"video": (video_path.name, f, "video/mp4")}
         data = {
             "caption": caption,
             "share_to_feed": "true" if share_to_feed else "false",
+            "is_ai_generated": "true" if is_ai_generated else "false",
         }
         resp = requests.post(
             PUBLISH_URL,
@@ -236,15 +240,17 @@ def _publish_step3_finalize(token, container_id, ig_user_id):
     return payload
 
 
-def publish_reel(token: str, video_path: Path, caption: str, share_to_feed: bool) -> dict:
+def publish_reel(token: str, video_path: Path, caption: str, share_to_feed: bool,
+                 is_ai_generated: bool = False) -> dict:
     """Publication 3-etapes async pour rester sous le timeout Render."""
     container_id, ig_user_id = _publish_step1_create_container(
-        token, video_path, caption, share_to_feed
+        token, video_path, caption, share_to_feed, is_ai_generated
     )
     _publish_step2_poll_until_finished(token, container_id)
     result = _publish_step3_finalize(token, container_id, ig_user_id)
     result.setdefault("filename", video_path.name)
     result.setdefault("share_to_feed", share_to_feed)
+    result.setdefault("is_ai_generated", is_ai_generated)
     return result
 
 
@@ -268,6 +274,11 @@ def main():
     )
     parser.add_argument(
         "--token", default=None, help="Access token Instagram (alternative a INSTAGRAM_ACCESS_TOKEN)"
+    )
+    parser.add_argument(
+        "--ai-generated",
+        action="store_true",
+        help="Declare le contenu comme genere par IA (is_ai_generated=true cote Instagram)",
     )
     args = parser.parse_args()
 
@@ -302,13 +313,15 @@ def main():
     print("   puis publier le Reel.")
     print()
 
-    result = publish_reel(token, video_path, args.caption, share_to_feed)
+    result = publish_reel(token, video_path, args.caption, share_to_feed,
+                          args.ai_generated)
 
     print("\nPUBLIE :")
     print(f"  media_id     : {result.get('media_id')}")
     print(f"  container_id : {result.get('container_id')}")
     print(f"  filename     : {result.get('filename')}")
     print(f"  share_to_feed: {result.get('share_to_feed')}")
+    print(f"  ai_generated : {result.get('is_ai_generated')}")
     print()
     print("  -> Ouvre l'app Instagram sur @{} pour voir ta Reel.".format(
         info.get("username", "ton_compte")

@@ -604,6 +604,9 @@ def instagram_publish():
 
     caption = request.form.get('caption', '')
     share_to_feed = request.form.get('share_to_feed', 'true').lower() == 'true'
+    # Auto-declaration d'usage de l'IA. Absent => false, donc les appelants
+    # existants gardent exactement le meme comportement qu'avant.
+    is_ai_generated = request.form.get('is_ai_generated', 'false').lower() == 'true'
     filename, file_bytes = _read_video_file()
     if not file_bytes:
         return jsonify({"success": False, "message": "No video file provided"}), 400
@@ -635,6 +638,7 @@ def instagram_publish():
                 "video_url": video_url,
                 "caption": caption,
                 "share_to_feed": "true" if share_to_feed else "false",
+                "is_ai_generated": "true" if is_ai_generated else "false",
                 "access_token": token,
             },
             timeout=20,
@@ -654,6 +658,7 @@ def instagram_publish():
         "ig_user_id": ig_user_id,
         "filename": filename,
         "share_to_feed": share_to_feed,
+        "is_ai_generated": is_ai_generated,
         "video_url": video_url,
         "next_step": "Poll GET /api/instagram/publish/status?container_id=<id> until status_code == FINISHED, then POST /api/instagram/publish/finalize with container_id and ig_user_id.",
     })
