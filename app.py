@@ -416,6 +416,43 @@ def instagram_serve_tmp_video(tmp_id):
     )
 
 
+def _instagram_store_tmp_image(file_bytes):
+    """Store uploaded image bytes in memory, return the public URL.
+
+    Same in-memory store as videos (shared TTL/cleanup), separate route so the
+    mimetype is image/jpeg — Instagram rejects carousel items served as video.
+    """
+    tmp_id = secrets.token_urlsafe(24) + ".jpg"
+    with _instagram_tmp_lock:
+        now = time.time()
+        for old_id in list(_instagram_tmp_videos.keys()):
+            if _instagram_tmp_videos[old_id]["expires_at"] < now:
+                _instagram_tmp_videos.pop(old_id, None)
+        _instagram_tmp_videos[tmp_id] = {
+            "bytes": file_bytes,
+            "expires_at": now + _INSTAGRAM_TMP_TTL_SECONDS,
+        }
+    return f"{BACKEND_URL}/instagram/tmp-image/{tmp_id}"
+
+
+@app.route('/instagram/tmp-image/<tmp_id>')
+def instagram_serve_tmp_image(tmp_id):
+    """Serve a temporary image so Instagram can pull it (carousel items)."""
+    with _instagram_tmp_lock:
+        entry = _instagram_tmp_videos.get(tmp_id)
+        if entry and entry["expires_at"] < time.time():
+            _instagram_tmp_videos.pop(tmp_id, None)
+            entry = None
+    if not entry:
+        return ("Not Found or Expired", 404)
+    return send_file(
+        io.BytesIO(entry["bytes"]),
+        mimetype="image/jpeg",
+        as_attachment=False,
+        download_name=tmp_id,
+    )
+
+
 @app.route('/instagram/auth')
 def instagram_auth():
     """Start the Instagram OAuth flow (Business Login)."""
@@ -660,6 +697,96 @@ def instagram_publish():
         "share_to_feed": share_to_feed,
         "is_ai_generated": is_ai_generated,
         "video_url": video_url,
+        "next_step": "Poll GET /api/instagram/publish/status?container_id=<id> until status_code == FINISHED, then POST /api/instagram/publish/finalize with container_id and ig_user_id.",
+    })
+
+
+@app.route('/api/instagram/carousel', methods=['POST'])
+def instagram_carousel():
+    """Step 1 of the Instagram carousel publish flow (classic image post).
+
+    Accepts 2-10 ordered JPEG images (multipart field 'images'), hosts them,
+    creates one child container per image then the CAROUSEL container, and
+    returns container_id. The client then polls /api/instagram/publish/status
+    and calls /api/instagram/publish/finalize, exactly like the reel flow.
+    """
+    if not _instagram_configured():
+        return jsonify({"error": "Instagram not configured"}), 503
+    token = _read_token()
+    if not token:
+        return jsonify({"error": "No token provided"}), 401
+
+    caption = request.form.get('caption', '')
+    is_ai_generated = request.form.get('is_ai_generated', 'false').lower() == 'true'
+    images = request.files.getlist('images')
+    if len(images) < 2:
+        return jsonify({"success": False, "message": "Provide 2-10 images"}), 400
+    if len(images) > 10:
+        return jsonify({"success": False, "message": "Instagram carousels max out at 10 images"}), 400
+
+    try:
+        me_resp = requests.get(
+            f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}/me",
+            params={"fields": "id,username", "access_token": token},
+            timeout=10,
+        )
+        me_data = me_resp.json()
+    except Exception as e:
+        return jsonify({"error": f"Could not resolve Instagram user: {e}"}), 500
+    ig_user_id = me_data.get("id")
+    if not ig_user_id:
+        return jsonify({"error": "Could not resolve Instagram user id", "details": me_data}), 400
+
+    children = []
+    for f in images:
+        image_url = _instagram_store_tmp_image(f.read())
+        try:
+            child_resp = requests.post(
+                f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}/{ig_user_id}/media",
+                params={
+                    "image_url": image_url,
+                    "is_carousel_item": "true",
+                    "access_token": token,
+                },
+                timeout=30,
+            )
+            child_data = child_resp.json()
+        except Exception as e:
+            return jsonify({"error": f"Child container failed: {e}", "index": len(children)}), 500
+        child_id = child_data.get("id")
+        if not child_id:
+            app.logger.error(f"Instagram child container failed: {child_data}")
+            return jsonify({"error": "Child container creation failed",
+                            "details": child_data, "index": len(children)}), 400
+        children.append(child_id)
+
+    try:
+        car_resp = requests.post(
+            f"https://graph.instagram.com/{INSTAGRAM_GRAPH_VERSION}/{ig_user_id}/media",
+            params={
+                "media_type": "CAROUSEL",
+                "children": ",".join(children),
+                "caption": caption,
+                "is_ai_generated": "true" if is_ai_generated else "false",
+                "access_token": token,
+            },
+            timeout=30,
+        )
+        car_data = car_resp.json()
+    except Exception as e:
+        return jsonify({"error": f"Carousel container failed: {e}"}), 500
+    container_id = car_data.get("id")
+    if not container_id:
+        app.logger.error(f"Instagram carousel container failed: {car_data}")
+        return jsonify({"error": "Carousel container creation failed", "details": car_data}), 400
+
+    return jsonify({
+        "success": True,
+        "stage": "carousel_container_created",
+        "container_id": container_id,
+        "ig_user_id": ig_user_id,
+        "children_count": len(children),
+        "is_ai_generated": is_ai_generated,
         "next_step": "Poll GET /api/instagram/publish/status?container_id=<id> until status_code == FINISHED, then POST /api/instagram/publish/finalize with container_id and ig_user_id.",
     })
 
